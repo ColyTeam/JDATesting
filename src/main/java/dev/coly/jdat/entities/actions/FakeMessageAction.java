@@ -24,25 +24,15 @@ import java.util.function.Consumer;
 public class FakeMessageAction implements MessageAction {
 
     private Message message;
-    private MessageEmbed messageEmbed;
     private CountDownLatch latch = new CountDownLatch(1);
 
     public FakeMessageAction(Message message) {
         this.message = message;
     }
 
-    public FakeMessageAction(MessageEmbed messageEmbed) {
-        this.messageEmbed = messageEmbed;
-    }
-
     public Message awaitReturn() throws InterruptedException {
         latch.await();
         return message;
-    }
-
-    public MessageEmbed awaitReturnEmbed() throws InterruptedException {
-        latch.await();
-        return messageEmbed;
     }
     
     @Override

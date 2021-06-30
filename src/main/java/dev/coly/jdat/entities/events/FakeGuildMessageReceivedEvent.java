@@ -14,6 +14,12 @@ public class FakeGuildMessageReceivedEvent extends GuildMessageReceivedEvent {
         this.message = message;
     }
 
+    /**
+     * Wait for the output of the command.
+     *
+     * @return                      The output of the command.
+     * @throws InterruptedException Uses await.
+     */
     public Message awaitReturn() throws InterruptedException {
         return message.getFakeChannel().awaitReturn();
     }

@@ -2,8 +2,11 @@ package dev.coly.jdat;
 
 import dev.coly.jdat.entities.events.FakeGuildMessageReceivedEvent;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.junit.jupiter.api.Assertions;
+
+import java.util.Objects;
 
 /**
  * This class should be used in testing. It creates fake {@link net.dv8tion.jda.api.events.Event}s and other JDA objects
@@ -41,6 +44,58 @@ public class JDATesting {
         listener.onEvent(event);
         try {
             Assertions.assertEquals(expectedOutput, event.awaitReturn().getContentRaw());
+        } catch (InterruptedException e) {
+            Assertions.fail(e);
+        }
+    }
+
+    /**
+     * Test a {@link EventListener} with a {@link FakeGuildMessageReceivedEvent}. The return will be tested against the
+     * expectedOutput specified.
+     *
+     * @param listener              The {@link EventListener} that will be tested.
+     * @param input                 The input you want to test.
+     * @param expectedOutput        The output {@link MessageEmbed} expected from the event.
+     */
+    public static void assertGuildMessageReceivedEvent(EventListener listener, String input, MessageEmbed expectedOutput) {
+        FakeGuildMessageReceivedEvent event = JDAObjects.getFakeGuildMessageReceivedEvent(input);
+        listener.onEvent(event);
+        try {
+            Message message = event.awaitReturn();
+            for (MessageEmbed embed : message.getEmbeds()) {
+                Assertions.assertEquals(expectedOutput.getTitle(), embed.getTitle());
+                Assertions.assertEquals(expectedOutput.getColor(), embed.getColor());
+                Assertions.assertEquals(expectedOutput.getDescription(), embed.getDescription());
+                Assertions.assertEquals(expectedOutput.getTimestamp(), embed.getTimestamp());
+                Assertions.assertEquals(expectedOutput.getUrl(), embed.getUrl());
+
+                if (expectedOutput.getAuthor() != null)
+                    Assertions.assertEquals(expectedOutput.getAuthor().getName(),
+                            Objects.requireNonNull(embed.getAuthor()).getName());
+
+                if (expectedOutput.getFooter() != null) {
+                    Assertions.assertEquals(expectedOutput.getFooter().getText(),
+                            Objects.requireNonNull(embed.getFooter()).getText());
+                    Assertions.assertEquals(expectedOutput.getFooter().getIconUrl(),
+                            Objects.requireNonNull(embed.getFooter()).getIconUrl());
+                }
+
+                if (expectedOutput.getImage() != null)
+                    Assertions.assertEquals(expectedOutput.getImage().getUrl(),
+                            Objects.requireNonNull(embed.getImage()).getUrl());
+
+                if (expectedOutput.getThumbnail() != null)
+                    Assertions.assertEquals(expectedOutput.getThumbnail().getUrl(),
+                            Objects.requireNonNull(embed.getThumbnail()).getUrl());
+
+                int i = 0;
+                for (MessageEmbed.Field field : embed.getFields()) {
+                    Assertions.assertEquals(expectedOutput.getFields().get(i).getName(), field.getName());
+                    Assertions.assertEquals(expectedOutput.getFields().get(i).getValue(), field.getValue());
+                    Assertions.assertEquals(expectedOutput.getFields().get(i).isInline(), field.isInline());
+                    i++;
+                }
+            }
         } catch (InterruptedException e) {
             Assertions.fail(e);
         }
