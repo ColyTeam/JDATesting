@@ -6,6 +6,9 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class TestJDATesting {
@@ -46,7 +49,9 @@ public class TestJDATesting {
         embedBuilder.setTitle("Test Embed");
         embedBuilder.setAuthor("Coly Team");
         embedBuilder.addField("Test Name", "Test Value", true);
-        JDATesting.assertGuildMessageReceivedEvent(new TestEventListener(), ".embed", embedBuilder.build());
+
+        JDATesting.assertGuildMessageReceivedEvent(new TestEventListener(), ".embed",
+                new ArrayList<>(Collections.singleton(embedBuilder.build())));
     }
 
 }
