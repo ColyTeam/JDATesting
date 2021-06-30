@@ -10,8 +10,7 @@ import net.dv8tion.jda.api.requests.restaction.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class FakeTextChannel implements TextChannel {
 
@@ -35,22 +34,41 @@ public class FakeTextChannel implements TextChannel {
         this.topic = topic;
     }
 
-    
+
+    @NotNull
     @Override
-    public MessageAction sendMessage(Message msg) {
+    public MessageAction sendMessage(@NotNull Message msg) {
         messageAction = new FakeMessageAction(msg);
         return messageAction;
     }
 
+    @NotNull
     @Override
-    public MessageAction sendMessage(CharSequence text) {
+    public MessageAction sendMessage(@NotNull CharSequence text) {
         return sendMessage(JDAObjects.getFakeMessage(this, text.toString()));
     }
 
     @NotNull
     @Override
     public MessageAction sendMessage(@NotNull MessageEmbed embed) {
-        return sendMessage(JDAObjects.getFakeMessage(this, embed));
+        List<MessageEmbed> list = new ArrayList<>();
+        list.add(embed);
+        return sendMessage(JDAObjects.getFakeMessage(this, list));
+    }
+
+    @NotNull
+    @Override
+    public MessageAction sendMessageEmbeds(@NotNull Collection<? extends MessageEmbed> embeds) {
+        return sendMessage(JDAObjects.getFakeMessage(this, new ArrayList<>(embeds)));
+    }
+
+    @NotNull
+    @Override
+    public MessageAction sendMessageEmbeds(@NotNull MessageEmbed embed, @NotNull MessageEmbed... other) {
+        List<MessageEmbed> list = new ArrayList<>();
+        list.add(embed);
+        list.addAll(Arrays.asList(other));
+        return sendMessage(JDAObjects.getFakeMessage(this, list));
     }
 
     public Message awaitReturn() throws InterruptedException {

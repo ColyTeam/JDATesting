@@ -17,12 +17,12 @@ public class FakeMessage implements Message {
 
     private final FakeTextChannel channel;
     private String contentRaw;
-    private MessageEmbed messageEmbed;
+    private List<MessageEmbed> messageEmbeds;
 
-    private List<User> mentionedUsers = new ArrayList<>();
-    private List<Member> mentionedMembers = new ArrayList<>();
-    private List<Role> mentionedRoles = new ArrayList<>();
-    private List<TextChannel> mentionedChannels = new ArrayList<>();
+    private final List<User> mentionedUsers = new ArrayList<>();
+    private final List<Member> mentionedMembers = new ArrayList<>();
+    private final List<Role> mentionedRoles = new ArrayList<>();
+    private final List<TextChannel> mentionedChannels = new ArrayList<>();
     private User user;
     private Member member;
 
@@ -31,9 +31,9 @@ public class FakeMessage implements Message {
         this.contentRaw = contentRaw;
     }
 
-    public FakeMessage(FakeTextChannel channel, MessageEmbed messageEmbed) {
+    public FakeMessage(FakeTextChannel channel, List<MessageEmbed> messageEmbeds) {
         this.channel = channel;
-        this.messageEmbed = messageEmbed;
+        this.messageEmbeds = messageEmbeds;
     }
 
     public FakeTextChannel getFakeChannel() {
@@ -280,7 +280,7 @@ public class FakeMessage implements Message {
     
     @Override
     public List<MessageEmbed> getEmbeds() {
-        return null;
+        return messageEmbeds;
     }
 
     
