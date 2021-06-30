@@ -5,6 +5,7 @@ import dev.coly.jdat.entities.FakeJDA;
 import dev.coly.jdat.entities.FakeMessage;
 import dev.coly.jdat.entities.FakeTextChannel;
 import dev.coly.jdat.entities.events.FakeGuildMessageReceivedEvent;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 
 /**
  * <p>Fake objects from JDA objects.</p>
@@ -64,6 +65,28 @@ public class JDAObjects {
      */
     public static FakeMessage getFakeMessage(String contentRaw) {
         return new FakeMessage(getFakeTextChannel(), contentRaw);
+    }
+
+    /**
+     * Returns a fake {@link net.dv8tion.jda.api.entities.Message}.
+     *
+     * @param channel       The {@link FakeTextChannel} the message would be send in.
+     * @param messageEmbed  An {@link MessageEmbed} that would be send.
+     * @return              A fake {@link net.dv8tion.jda.api.entities.Message}.
+     */
+    public static FakeMessage getFakeMessage(FakeTextChannel channel, MessageEmbed messageEmbed) {
+        return new FakeMessage(channel, messageEmbed);
+    }
+
+    /**
+     * Returns a fake {@link net.dv8tion.jda.api.entities.Message}. It will use a {@link FakeTextChannel} from
+     * {@link JDAObjects#getFakeTextChannel()}.
+     *
+     * @param messageEmbed  An {@link MessageEmbed} that would be send.
+     * @return              A fake {@link net.dv8tion.jda.api.entities.Message}.
+     */
+    public static FakeMessage getFakeMessage(MessageEmbed messageEmbed) {
+        return new FakeMessage(getFakeTextChannel(), messageEmbed);
     }
 
     /**

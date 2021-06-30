@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.managers.ChannelManager;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.*;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -44,6 +45,12 @@ public class FakeTextChannel implements TextChannel {
     @Override
     public MessageAction sendMessage(CharSequence text) {
         return sendMessage(JDAObjects.getFakeMessage(this, text.toString()));
+    }
+
+    @NotNull
+    @Override
+    public MessageAction sendMessage(@NotNull MessageEmbed embed) {
+        return sendMessage(JDAObjects.getFakeMessage(this, embed));
     }
 
     public Message awaitReturn() throws InterruptedException {

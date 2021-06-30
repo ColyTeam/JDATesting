@@ -16,7 +16,8 @@ import java.util.*;
 public class FakeMessage implements Message {
 
     private final FakeTextChannel channel;
-    private final String contentRaw;
+    private String contentRaw;
+    private MessageEmbed messageEmbed;
 
     private List<User> mentionedUsers = new ArrayList<>();
     private List<Member> mentionedMembers = new ArrayList<>();
@@ -28,6 +29,11 @@ public class FakeMessage implements Message {
     public FakeMessage(FakeTextChannel channel, String contentRaw) {
         this.channel = channel;
         this.contentRaw = contentRaw;
+    }
+
+    public FakeMessage(FakeTextChannel channel, MessageEmbed messageEmbed) {
+        this.channel = channel;
+        this.messageEmbed = messageEmbed;
     }
 
     public FakeTextChannel getFakeChannel() {
