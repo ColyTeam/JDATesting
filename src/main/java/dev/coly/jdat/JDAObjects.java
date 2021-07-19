@@ -1,9 +1,6 @@
 package dev.coly.jdat;
 
-import dev.coly.jdat.entities.FakeGuild;
-import dev.coly.jdat.entities.FakeJDA;
-import dev.coly.jdat.entities.FakeMessage;
-import dev.coly.jdat.entities.FakeTextChannel;
+import dev.coly.jdat.entities.*;
 import dev.coly.jdat.entities.events.FakeGuildMessageReceivedEvent;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
@@ -107,6 +104,15 @@ public class JDAObjects {
      */
     public static FakeGuild getFakeGuild() {
         return new FakeGuild(getFakeJDA(), "Fake Guild");
+    }
+
+    /**
+     * Returns a fake {@link net.dv8tion.jda.api.entities.User}.
+     *
+     * @return  A fake {@link net.dv8tion.jda.api.entities.User}.
+     */
+    public static FakeUser getFakeUser() {
+        return new FakeUser();
     }
 
 }
