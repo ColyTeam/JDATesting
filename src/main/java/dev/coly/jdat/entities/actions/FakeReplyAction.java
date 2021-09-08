@@ -1,6 +1,8 @@
 package dev.coly.jdat.entities.actions;
 
+import dev.coly.jdat.JDAObjects;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyAction;
 import net.dv8tion.jda.api.utils.concurrent.DelayedCompletableFuture;
@@ -9,6 +11,8 @@ import net.dv8tion.jda.internal.requests.restaction.interactions.ReplyActionImpl
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.*;
@@ -16,9 +20,10 @@ import java.util.function.Consumer;
 
 public class FakeReplyAction extends ReplyActionImpl {
 
-    private final Message message;
+    private Message message;
     private boolean defer;
     private final CountDownLatch latch = new CountDownLatch(1);
+    private final List<MessageEmbed> list = new LinkedList<>();
 
     public FakeReplyAction(InteractionHookImpl hook, Message message) {
         super(hook);
@@ -26,11 +31,22 @@ public class FakeReplyAction extends ReplyActionImpl {
     }
 
     public Message getMessage() {
+        if (message == null)
+            this.message = JDAObjects.getFakeMessage(list);
+
         return message;
     }
 
     public ReplyAction setDefer(boolean defer) {
         this.defer = defer;
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public ReplyAction addEmbeds(@NotNull MessageEmbed... embeds) {
+        super.addEmbeds(embeds);
+        list.addAll(List.of(embeds));
         return this;
     }
 
