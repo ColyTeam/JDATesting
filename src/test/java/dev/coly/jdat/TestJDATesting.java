@@ -50,6 +50,11 @@ public class TestJDATesting {
 
     @Test
     public void testAssertSlashCommandEvent() {
+        JDATesting.assertSlashCommandEvent(new TestEventListener(), "ping", new HashMap<>(), "Pong!");
+    }
+
+    @Test
+    public void testAssertSlashCommandEventWithEmbeds() {
         JDATesting.assertSlashCommandEvent(new TestEventListener(), "embed", new HashMap<>(),
                 new ArrayList<>(Collections.singleton(TestEventListener.getTestEmbed())));
     }

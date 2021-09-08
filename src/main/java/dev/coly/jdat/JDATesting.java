@@ -78,6 +78,27 @@ public class JDATesting {
     }
 
     /**
+     * Test a {@link EventListener} with a {@link FakeSlashCommandEvent}. The raw content of the return message will
+     * be tested against the expectedOutput specified.
+     *
+     * @param listener          The {@link EventListener} that will be tested.
+     * @param command           The command that will be tested.
+     * @param options           Options that will be tested.
+     * @param expectedOutput    The excepted string that {@link Message#getContentRaw()}} will have.
+     */
+    public static void assertSlashCommandEvent(EventListener listener, String command, Map<String, Object> options,
+                                               String expectedOutput) {
+        FakeSlashCommandEvent event = JDAObjects.getFakeSlashCommandEvent(command, 0, options);
+        listener.onEvent(event);
+        try {
+            FakeReplyAction action = event.awaitReturn();
+            Assertions.assertEquals(action.getMessage().getContentRaw(), expectedOutput);
+        } catch (InterruptedException e){
+            Assertions.fail(e);
+        }
+    }
+
+    /**
      * Test a {@link EventListener} with a {@link FakeSlashCommandEvent}. The return will be tested against the
      * expectedOutput specified.
      *

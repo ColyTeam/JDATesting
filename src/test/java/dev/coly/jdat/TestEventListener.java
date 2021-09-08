@@ -23,6 +23,8 @@ public class TestEventListener implements EventListener {
             SlashCommandEvent e = (SlashCommandEvent) event;
             if (e.getName().equals("embed")) {
                 e.replyEmbeds(getTestEmbed()).queue();
+            } else if (e.getName().equals("ping")) {
+                e.reply("Pong!").queue();
             }
         }
     }
