@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 public class TestEventListener implements EventListener {
 
     @Override
@@ -21,10 +23,18 @@ public class TestEventListener implements EventListener {
             }
         } else if (event instanceof SlashCommandEvent) {
             SlashCommandEvent e = (SlashCommandEvent) event;
-            if (e.getName().equals("embed")) {
-                e.replyEmbeds(getTestEmbed()).queue();
-            } else if (e.getName().equals("ping")) {
-                e.reply("Pong!").queue();
+            switch (e.getName()) {
+                case "embed":
+                    e.replyEmbeds(getTestEmbed()).queue();
+                    break;
+                case "ping":
+                    e.reply("Pong!").queue();
+                    break;
+                case "options":
+                    e.reply("bool: " + Objects.requireNonNull(e.getOption("bool")).getAsBoolean() +
+                            " - str: " + Objects.requireNonNull(e.getOption("str")).getAsString() +
+                            " - number: " + Objects.requireNonNull(e.getOption("number")).getAsLong() +
+                            " - user: " + Objects.requireNonNull(e.getOption("user")).getAsUser().getAsTag()).queue();
             }
         }
     }

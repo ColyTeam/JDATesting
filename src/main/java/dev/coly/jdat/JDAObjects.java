@@ -160,30 +160,34 @@ public class JDAObjects {
         List<DataObject> options = new LinkedList<>();
         for (Map.Entry<String, Object> entry : valueMapping.entrySet()) {
             DataObject option = DataObject.empty();
+            Object value = entry.getValue();
 
             if (entry.getValue() instanceof String) {
                 option.put("type", 3);
-            } else if (entry.getValue() instanceof Boolean) {
+            } else if (value instanceof Long | entry.getValue() instanceof Integer) {
                 option.put("type", 4);
-            } else if (entry.getValue() instanceof Long) {
+            } else if (value instanceof Boolean) {
                 option.put("type", 5);
-            } else if (entry.getValue() instanceof User) {
+            } else if (value instanceof User) {
                 option.put("type", 6);
-            } else if (entry.getValue() instanceof AbstractChannel) {
+                value = ((User) value).getId();
+            } else if (value instanceof AbstractChannel) {
                 option.put("type", 7);
-            } else if (entry.getValue() instanceof Role) {
+                value = ((AbstractChannel) value).getId();
+            } else if (value instanceof Role) {
                 option.put("type", 8);
-            } else if (entry.getValue() instanceof Integer) {
+                value = ((Role) value).getId();
+            } else if (value instanceof Double) {
                 option.put("type", 10);
             } else {
                 option.put("type", 0);
             }
 
             option.put("name", entry.getKey());
-            option.put("value", entry.getValue());
+            option.put("value", value);
             options.add(option);
         }
-        dataObject.put("option", DataArray.empty().addAll(options));
+        data.put("options", DataArray.empty().addAll(options));
 
         dataObject.put("data", data);
 

@@ -5,10 +5,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 public class TestJDATesting {
 
@@ -51,6 +48,17 @@ public class TestJDATesting {
     @Test
     public void testAssertSlashCommandEvent() {
         JDATesting.assertSlashCommandEvent(new TestEventListener(), "ping", new HashMap<>(), "Pong!");
+    }
+
+    @Test
+    public void testAssertSlashCommandEventWithOptions() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("bool", true);
+        map.put("str", "text");
+        map.put("number", 42);
+        map.put("user", JDAObjects.getFakeUser());
+        JDATesting.assertSlashCommandEvent(new TestEventListener(), "options", map,
+                "bool: true - str: text - number: 42 - user: User#0000");
     }
 
     @Test
