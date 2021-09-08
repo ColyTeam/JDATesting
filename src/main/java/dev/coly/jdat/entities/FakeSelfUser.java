@@ -120,7 +120,7 @@ public class FakeSelfUser implements SelfUser {
     @NotNull
     @Override
     public String getAsMention() {
-        return "User#0000";
+        return "<@" + getId() + ">";
     }
 
     @Override

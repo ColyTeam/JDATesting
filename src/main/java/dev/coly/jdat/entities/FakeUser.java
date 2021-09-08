@@ -1,12 +1,15 @@
 package dev.coly.jdat.entities;
 
+import dev.coly.jdat.JDAObjects;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.requests.RestAction;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -14,32 +17,35 @@ public class FakeUser implements User {
 
     
     @Override
+    @NotNull
     public String getName() {
-        return null;
+        return "User";
     }
-
     
     @Override
+    @NotNull
     public String getDiscriminator() {
-        return null;
+        return "0000";
     }
 
     @Nullable
     @Override
     public String getAvatarId() {
-        return null;
+        return "0";
     }
 
     
     @Override
+    @NotNull
     public String getDefaultAvatarId() {
-        return null;
+        return "0";
     }
 
     
     @Override
+    @NotNull
     public String getAsTag() {
-        return null;
+        return getName() + '#' + getDiscriminator();
     }
 
     @Override
@@ -55,8 +61,9 @@ public class FakeUser implements User {
 
     
     @Override
+    @NotNull
     public List<Guild> getMutualGuilds() {
-        return null;
+        return Collections.singletonList(JDAObjects.getFakeGuild());
     }
 
     @Override
@@ -71,14 +78,16 @@ public class FakeUser implements User {
 
     
     @Override
+    @NotNull
     public JDA getJDA() {
-        return null;
+        return JDAObjects.getFakeJDA();
     }
 
     
     @Override
+    @NotNull
     public EnumSet<UserFlag> getFlags() {
-        return null;
+        return (EnumSet<UserFlag>) Collections.emptyEnumeration();
     }
 
     @Override
@@ -88,8 +97,9 @@ public class FakeUser implements User {
 
     
     @Override
+    @NotNull
     public String getAsMention() {
-        return null;
+        return "<@" + getId() + ">";
     }
 
     @Override
