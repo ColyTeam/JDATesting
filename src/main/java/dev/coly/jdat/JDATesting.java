@@ -1,12 +1,15 @@
 package dev.coly.jdat;
 
+import dev.coly.jdat.entities.actions.FakeReplyAction;
 import dev.coly.jdat.entities.events.FakeGuildMessageReceivedEvent;
+import dev.coly.jdat.entities.events.FakeSlashCommandEvent;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.hooks.EventListener;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -65,6 +68,53 @@ public class JDATesting {
             Message message = event.awaitReturn();
             int i = 0;
             for (MessageEmbed embed : message.getEmbeds()) {
+                MessageEmbed expectedOutput = expectedOutputs.get(i);
+                assertEmbed(expectedOutput, embed);
+                i++;
+            }
+        } catch (InterruptedException e) {
+            Assertions.fail(e);
+        }
+    }
+
+    /**
+     * Test a {@link EventListener} with a {@link FakeSlashCommandEvent}. The raw content of the return message will
+     * be tested against the expectedOutput specified.
+     *
+     * @param listener          The {@link EventListener} that will be tested.
+     * @param command           The command that will be tested.
+     * @param options           Options that will be tested.
+     * @param expectedOutput    The excepted string that {@link Message#getContentRaw()}} will have.
+     */
+    public static void assertSlashCommandEvent(EventListener listener, String command, Map<String, Object> options,
+                                               String expectedOutput) {
+        FakeSlashCommandEvent event = JDAObjects.getFakeSlashCommandEvent(command, 0, options);
+        listener.onEvent(event);
+        try {
+            FakeReplyAction action = event.awaitReturn();
+            Assertions.assertEquals(action.getMessage().getContentRaw(), expectedOutput);
+        } catch (InterruptedException e){
+            Assertions.fail(e);
+        }
+    }
+
+    /**
+     * Test a {@link EventListener} with a {@link FakeSlashCommandEvent}. The return will be tested against the
+     * expectedOutput specified.
+     *
+     * @param listener          The {@link EventListener} that will be tested.
+     * @param command           The command that will be tested.
+     * @param options           Options that will be tested.
+     * @param expectedOutputs   A list of {@link MessageEmbed} to test against. The order is important.
+     */
+    public static void assertSlashCommandEvent(EventListener listener, String command, Map<String, Object> options,
+                                               List<MessageEmbed> expectedOutputs) {
+        FakeSlashCommandEvent event = JDAObjects.getFakeSlashCommandEvent(command, 0, options);
+        listener.onEvent(event);
+        try {
+            FakeReplyAction action = event.awaitReturn();
+            int i = 0;
+            for (MessageEmbed embed : action.getMessage().getEmbeds()) {
                 MessageEmbed expectedOutput = expectedOutputs.get(i);
                 assertEmbed(expectedOutput, embed);
                 i++;

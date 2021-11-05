@@ -4,26 +4,53 @@ import dev.coly.jdat.JDAObjects;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.PrivateChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.SelfUser;
+import net.dv8tion.jda.api.managers.AccountManager;
 import net.dv8tion.jda.api.requests.RestAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 
-public class FakeUser implements User {
+public class FakeSelfUser implements SelfUser {
 
-    
     @Override
+    public long getApplicationIdLong() {
+        return 0;
+    }
+
+    @Override
+    public boolean isVerified() {
+        return false;
+    }
+
+    @Override
+    public boolean isMfaEnabled() {
+        return false;
+    }
+
+    @Override
+    public long getAllowedFileSize() {
+        return 0;
+    }
+
     @NotNull
+    @Override
+    public AccountManager getManager() {
+        return null;
+    }
+
+    @NotNull
+    @Override
     public String getName() {
         return "User";
     }
-    
-    @Override
+
     @NotNull
+    @Override
     public String getDiscriminator() {
         return "0000";
     }
@@ -34,18 +61,16 @@ public class FakeUser implements User {
         return "0";
     }
 
-    
-    @Override
     @NotNull
+    @Override
     public String getDefaultAvatarId() {
         return "0";
     }
 
-    
-    @Override
     @NotNull
+    @Override
     public String getAsTag() {
-        return getName() + '#' + getDiscriminator();
+        return "<@0>";
     }
 
     @Override
@@ -53,17 +78,16 @@ public class FakeUser implements User {
         return false;
     }
 
-    
+    @NotNull
     @Override
     public RestAction<PrivateChannel> openPrivateChannel() {
         return null;
     }
 
-    
-    @Override
     @NotNull
+    @Override
     public List<Guild> getMutualGuilds() {
-        return Collections.singletonList(JDAObjects.getFakeGuild());
+        return new LinkedList<>();
     }
 
     @Override
@@ -76,16 +100,14 @@ public class FakeUser implements User {
         return false;
     }
 
-    
-    @Override
     @NotNull
+    @Override
     public JDA getJDA() {
         return JDAObjects.getFakeJDA();
     }
 
-    
-    @Override
     @NotNull
+    @Override
     public EnumSet<UserFlag> getFlags() {
         return (EnumSet<UserFlag>) Collections.emptyEnumeration();
     }
@@ -95,9 +117,8 @@ public class FakeUser implements User {
         return 0;
     }
 
-    
-    @Override
     @NotNull
+    @Override
     public String getAsMention() {
         return "<@" + getId() + ">";
     }
