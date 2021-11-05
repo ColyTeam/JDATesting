@@ -157,6 +157,9 @@ public class JDAObjects {
         data.put("id", commandId);
         data.put("name", command);
 
+        DataObject resolved = DataObject.empty();
+        DataObject users = DataObject.empty();
+
         List<DataObject> options = new LinkedList<>();
         for (Map.Entry<String, Object> entry : valueMapping.entrySet()) {
             DataObject option = DataObject.empty();
@@ -170,7 +173,19 @@ public class JDAObjects {
                 option.put("type", 5);
             } else if (value instanceof User) {
                 option.put("type", 6);
-                value = ((User) value).getId();
+
+                User u = (User) value;
+
+                DataObject user = DataObject.empty();
+                user.put("id", u.getId());
+                user.put("username", u.getName());
+                user.put("discriminator", u.getDiscriminator());
+                user.put("bot", u.isBot());
+                user.put("system", u.isSystem());
+
+                users.put(u.getId(), user);
+
+                value = u.getIdLong();
             } else if (value instanceof AbstractChannel) {
                 option.put("type", 7);
                 value = ((AbstractChannel) value).getId();
@@ -187,7 +202,10 @@ public class JDAObjects {
             option.put("value", value);
             options.add(option);
         }
+        resolved.put("users", users);
+
         data.put("options", DataArray.empty().addAll(options));
+        data.put("resolved", resolved);
 
         dataObject.put("data", data);
 
