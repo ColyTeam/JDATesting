@@ -3,7 +3,16 @@ package dev.coly.jdat.entities;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.ClientType;
+import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
@@ -145,7 +154,13 @@ public class FakeMember implements Member {
         return null;
     }
 
-    
+    @Nullable
+    @Override
+    public String getAvatarId() {
+        return null;
+    }
+
+
     @Override
     public List<Role> getRoles() {
         return null;

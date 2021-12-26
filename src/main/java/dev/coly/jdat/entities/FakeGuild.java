@@ -2,7 +2,23 @@ package dev.coly.jdat.entities;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Region;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Category;
+import net.dv8tion.jda.api.entities.Emote;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.GuildChannel;
+import net.dv8tion.jda.api.entities.GuildVoiceState;
+import net.dv8tion.jda.api.entities.Icon;
+import net.dv8tion.jda.api.entities.Invite;
+import net.dv8tion.jda.api.entities.ListedEmote;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.StageChannel;
+import net.dv8tion.jda.api.entities.StoreChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.VanityInvite;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.templates.Template;
 import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -10,7 +26,13 @@ import net.dv8tion.jda.api.interactions.commands.privileges.CommandPrivilege;
 import net.dv8tion.jda.api.managers.AudioManager;
 import net.dv8tion.jda.api.managers.GuildManager;
 import net.dv8tion.jda.api.requests.RestAction;
-import net.dv8tion.jda.api.requests.restaction.*;
+import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
+import net.dv8tion.jda.api.requests.restaction.ChannelAction;
+import net.dv8tion.jda.api.requests.restaction.CommandCreateAction;
+import net.dv8tion.jda.api.requests.restaction.CommandEditAction;
+import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.dv8tion.jda.api.requests.restaction.MemberAction;
+import net.dv8tion.jda.api.requests.restaction.RoleAction;
 import net.dv8tion.jda.api.requests.restaction.order.CategoryOrderAction;
 import net.dv8tion.jda.api.requests.restaction.order.ChannelOrderAction;
 import net.dv8tion.jda.api.requests.restaction.order.RoleOrderAction;
@@ -19,9 +41,15 @@ import net.dv8tion.jda.api.utils.cache.MemberCacheView;
 import net.dv8tion.jda.api.utils.cache.SnowflakeCacheView;
 import net.dv8tion.jda.api.utils.cache.SortedSnowflakeCacheView;
 import net.dv8tion.jda.api.utils.concurrent.Task;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -271,6 +299,12 @@ public class FakeGuild implements Guild {
         return null;
     }
 
+    @NotNull
+    @Override
+    public NSFWLevel getNSFWLevel() {
+        return null;
+    }
+
     @Nullable
     @Override
     public Member getMember(User user) {
@@ -402,7 +436,19 @@ public class FakeGuild implements Guild {
     public AudioManager getAudioManager() {
         return null;
     }
-    
+
+    @NotNull
+    @Override
+    public Task<Void> requestToSpeak() {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public Task<Void> cancelRequestToSpeak() {
+        return null;
+    }
+
     @Override
     public JDA getJDA() {
         return null;
@@ -604,7 +650,13 @@ public class FakeGuild implements Guild {
         return null;
     }
 
-    
+    @NotNull
+    @Override
+    public ChannelAction<StageChannel> createStageChannel(@NotNull String s, @Nullable Category category) {
+        return null;
+    }
+
+
     @Override
     public ChannelAction<Category> createCategory(String s) {
         return null;

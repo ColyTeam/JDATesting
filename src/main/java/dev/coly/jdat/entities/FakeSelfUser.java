@@ -69,6 +69,12 @@ public class FakeSelfUser implements SelfUser {
 
     @NotNull
     @Override
+    public RestAction<Profile> retrieveProfile() {
+        return null;
+    }
+
+    @NotNull
+    @Override
     public String getAsTag() {
         return "<@0>";
     }

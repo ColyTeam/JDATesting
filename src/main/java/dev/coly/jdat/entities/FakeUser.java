@@ -41,7 +41,13 @@ public class FakeUser implements User {
         return "0";
     }
 
-    
+    @NotNull
+    @Override
+    public RestAction<Profile> retrieveProfile() {
+        return null;
+    }
+
+
     @Override
     @NotNull
     public String getAsTag() {
