@@ -1,6 +1,12 @@
 package dev.coly.jdat;
 
-import dev.coly.jdat.entities.*;
+import dev.coly.jdat.entities.FakeGuild;
+import dev.coly.jdat.entities.FakeJDA;
+import dev.coly.jdat.entities.FakeJDAImpl;
+import dev.coly.jdat.entities.FakeMessage;
+import dev.coly.jdat.entities.FakeSelfUser;
+import dev.coly.jdat.entities.FakeTextChannel;
+import dev.coly.jdat.entities.FakeUser;
 import dev.coly.jdat.entities.events.FakeGuildMessageReceivedEvent;
 import dev.coly.jdat.entities.events.FakeSlashCommandEvent;
 import net.dv8tion.jda.api.entities.AbstractChannel;
@@ -13,7 +19,11 @@ import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.interactions.CommandInteractionImpl;
 import net.dv8tion.jda.internal.utils.config.AuthorizationConfig;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>Fake objects from JDA objects.</p>
@@ -54,6 +64,23 @@ public class JDAObjects {
      */
     public static FakeSlashCommandEvent getFakeSlashCommandEvent(String command, long commandId, Map<String, Object> options) {
         return new FakeSlashCommandEvent(getFakeJDA(), getFakeCommandInteraction(command, commandId, options));
+    }
+
+    /**
+     * Returns a fake {@link net.dv8tion.jda.api.events.interaction.SlashCommandEvent}.
+     *
+     * @param command           The command that would be executed by a {@link User}.
+     * @param commandId         The id of the command that would be executed by a {@link User}.
+     * @param options           The options that the command would have.
+     * @param subCommand        The last sub command for this command. This can not be null or empty is sub command
+     *                          group is not null and not empty.
+     * @param subCommandGroup   The last sub command group for this command.
+     * @return                  a fake {@link net.dv8tion.jda.api.events.interaction.SlashCommandEvent}.
+     */
+    public static FakeSlashCommandEvent getFakeSlashCommandEvent(String command, long commandId, Map<String, Object> options,
+                                                                 String subCommand, String subCommandGroup) {
+        return new FakeSlashCommandEvent(getFakeJDA(), getFakeCommandInteraction(command, commandId, options,
+                subCommand, subCommandGroup));
     }
 
     /**
@@ -144,7 +171,25 @@ public class JDAObjects {
      * @param valueMapping  The options that the command would have.
      * @return              a fake {@link CommandInteractionImpl}.
      */
-    public static CommandInteractionImpl getFakeCommandInteraction(String command, long commandId, Map<String, Object> valueMapping) {
+    public static CommandInteractionImpl getFakeCommandInteraction(String command, long commandId,
+                                                                   Map<String, Object> valueMapping) {
+        return getFakeCommandInteraction(command, commandId, valueMapping, null, null);
+    }
+
+    /**
+     * Returns a fake {@link CommandInteractionImpl}. This can be only used as a slash command.
+     *
+     * @param command           The command that would be executed by a {@link User}.
+     * @param commandId         The id of the command that would be executed by a {@link User}.
+     * @param valueMapping      The options that the command would have.
+     * @param subCommand        The last sub command. This can not be null or empty is sub command group is not null
+     *                          and not empty.
+     * @param subCommandGroup   The last sub command group.
+     * @return                  a fake {@link CommandInteractionImpl}.
+     */
+    public static CommandInteractionImpl getFakeCommandInteraction(String command, long commandId,
+                                                                   Map<String, Object> valueMapping, String subCommand,
+                                                                   String subCommandGroup) {
         DataObject dataObject = DataObject.empty();
         dataObject.put("id", "0");
         dataObject.put("token", "0");
@@ -204,7 +249,33 @@ public class JDAObjects {
         }
         resolved.put("users", users);
 
-        data.put("options", DataArray.empty().addAll(options));
+
+        if (subCommandGroup != null && !subCommandGroup.isEmpty()) {
+            if (subCommand == null || subCommand.isEmpty()) {
+                throw new IllegalArgumentException("Sub command can not be empty or null");
+            }
+
+            DataObject groupOption = DataObject.empty();
+            groupOption.put("type", 2);
+            groupOption.put("name", subCommandGroup);
+
+            DataObject subCommandOption = DataObject.empty();
+            subCommandOption.put("type", 1);
+            subCommandOption.put("name", subCommand);
+            subCommandOption.put("options", DataArray.empty().addAll(options));
+
+            groupOption.put("options", DataArray.empty().add(subCommandOption));
+            data.put("options", DataArray.empty().add(groupOption));
+        } else if (subCommand != null && !subCommand.isEmpty()) {
+            DataObject option = DataObject.empty();
+            option.put("type", 1);
+            option.put("name", subCommand);
+            option.put("options", DataArray.empty().addAll(options));
+            data.put("options", DataArray.empty().add(option));
+        } else {
+            data.put("options", DataArray.empty().addAll(options));
+        }
+
         data.put("resolved", resolved);
 
         dataObject.put("data", data);

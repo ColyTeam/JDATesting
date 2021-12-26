@@ -14,7 +14,7 @@ public class TestJDAObjects {
         FakeGuildMessageReceivedEvent event = JDAObjects.getFakeGuildMessageReceivedEvent(".ping");
         new TestEventListener().onEvent(event);
         try {
-            Assertions.assertEquals(event.awaitReturn().getContentRaw(), "Pong!");
+            Assertions.assertEquals("Pong!", event.awaitReturn().getContentRaw());
         } catch (InterruptedException e) {
             e.printStackTrace();
             Assertions.fail(e);
@@ -26,7 +26,21 @@ public class TestJDAObjects {
         FakeSlashCommandEvent event = JDAObjects.getFakeSlashCommandEvent("ping", 0, new HashMap<>());
         new TestEventListener().onEvent(event);
         try {
-            Assertions.assertEquals(event.awaitReturn().getMessage().getContentRaw(), "Pong!");
+            Assertions.assertEquals("Pong!", event.awaitReturn().getMessage().getContentRaw());
+        } catch (InterruptedException e) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    public void testFakeSlashCommandEventWithSubCommand() {
+        FakeSlashCommandEvent event = JDAObjects.getFakeSlashCommandEvent("ping", 0, new HashMap<>(),
+                "sub-command", "sub-command-group");
+        new TestEventListener().onEvent(event);
+        try {
+            Assertions.assertEquals("sub-command", event.getSubcommandName());
+            Assertions.assertEquals("sub-command-group", event.getSubcommandGroup());
+            Assertions.assertEquals("Pong!", event.awaitReturn().getMessage().getContentRaw());
         } catch (InterruptedException e) {
             Assertions.fail(e);
         }
