@@ -11,11 +11,16 @@ import net.dv8tion.jda.internal.requests.restaction.interactions.ReplyActionImpl
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class FakeReplyAction extends ReplyActionImpl {
@@ -47,6 +52,14 @@ public class FakeReplyAction extends ReplyActionImpl {
     public ReplyAction addEmbeds(@NotNull MessageEmbed... embeds) {
         super.addEmbeds(embeds);
         list.addAll(List.of(embeds));
+        return this;
+    }
+
+    @NotNull
+    @Override
+    public ReplyAction addEmbeds(@NotNull Collection<? extends MessageEmbed> embeds) {
+        super.addEmbeds(embeds);
+        list.addAll(embeds);
         return this;
     }
 
