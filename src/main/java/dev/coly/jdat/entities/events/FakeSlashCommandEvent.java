@@ -10,6 +10,7 @@ import net.dv8tion.jda.internal.interactions.CommandInteractionImpl;
 import net.dv8tion.jda.internal.interactions.InteractionHookImpl;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -52,7 +53,7 @@ public class FakeSlashCommandEvent extends SlashCommandEvent {
 
     @NotNull
     @Override
-    public ReplyAction replyEmbeds(@NotNull MessageEmbed embed, @NotNull MessageEmbed... embeds) {
+    public ReplyAction replyEmbeds(@NotNull MessageEmbed embed, MessageEmbed @NotNull ... embeds) {
         List<MessageEmbed> list = new LinkedList<>(Arrays.asList(embeds));
         list.add(embed);
         return replyEmbeds(list);
@@ -60,14 +61,15 @@ public class FakeSlashCommandEvent extends SlashCommandEvent {
 
     @NotNull
     @Override
-    public ReplyAction replyFormat(@NotNull String format, @NotNull Object... args) {
+    public ReplyAction replyFormat(@NotNull String format, Object @NotNull ... args) {
         return reply(String.format(format, args));
     }
 
     @NotNull
     @Override
     public ReplyAction deferReply() {
-        return new FakeReplyAction((InteractionHookImpl) this.interaction.getHook(), null).setDefer(true);
+        this.replyAction = new FakeReplyAction((InteractionHookImpl) this.interaction.getHook(), null);
+        return replyAction.setDefer(true);
     }
 
     @NotNull

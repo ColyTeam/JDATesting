@@ -19,7 +19,7 @@ public class TestEventListener implements EventListener {
             if (e.getMessage().getContentDisplay().equals(".ping")) {
                 e.getChannel().sendMessage("Pong!").queue();
             } else if (e.getMessage().getContentDisplay().equals(".embed")) {
-                e.getChannel().sendMessage(getTestEmbed()).queue();
+                e.getChannel().sendMessageEmbeds(getTestEmbed()).queue();
             }
         } else if (event instanceof SlashCommandEvent) {
             SlashCommandEvent e = (SlashCommandEvent) event;
@@ -35,6 +35,10 @@ public class TestEventListener implements EventListener {
                             " - str: " + Objects.requireNonNull(e.getOption("str")).getAsString() +
                             " - number: " + Objects.requireNonNull(e.getOption("number")).getAsLong() +
                             " - user: " + Objects.requireNonNull(e.getOption("user")).getAsUser().getAsTag()).queue();
+                    break;
+                case "defer":
+                    e.deferReply().queue();
+                    break;
             }
         }
     }

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-public class TestJDATesting {
+public class TestGuildMessageReceivedEvent {
 
     @Test
     public void testTestGuildMessageReceivedEvent() {
@@ -42,28 +42,6 @@ public class TestJDATesting {
     @Test
     public void testAssertGuildMessageReceivedEventWithEmbeds() {
         JDATesting.assertGuildMessageReceivedEvent(new TestEventListener(), ".embed",
-                new ArrayList<>(Collections.singleton(TestEventListener.getTestEmbed())));
-    }
-
-    @Test
-    public void testAssertSlashCommandEvent() {
-        JDATesting.assertSlashCommandEvent(new TestEventListener(), "ping", new HashMap<>(), "Pong!");
-    }
-
-    @Test
-    public void testAssertSlashCommandEventWithOptions() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("bool", true);
-        map.put("str", "text");
-        map.put("number", 42);
-        map.put("user", JDAObjects.getFakeUser());
-        JDATesting.assertSlashCommandEvent(new TestEventListener(), "options", map,
-                "bool: true - str: text - number: 42 - user: User#0000");
-    }
-
-    @Test
-    public void testAssertSlashCommandEventWithEmbeds() {
-        JDATesting.assertSlashCommandEvent(new TestEventListener(), "embed", new HashMap<>(),
                 new ArrayList<>(Collections.singleton(TestEventListener.getTestEmbed())));
     }
 
