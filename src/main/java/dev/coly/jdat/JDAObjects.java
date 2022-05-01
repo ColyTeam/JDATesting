@@ -1,304 +1,182 @@
 package dev.coly.jdat;
 
-import dev.coly.jdat.entities.FakeGuild;
-import dev.coly.jdat.entities.FakeJDA;
-import dev.coly.jdat.entities.FakeJDAImpl;
-import dev.coly.jdat.entities.FakeMessage;
-import dev.coly.jdat.entities.FakeSelfUser;
-import dev.coly.jdat.entities.FakeTextChannel;
-import dev.coly.jdat.entities.FakeUser;
-import dev.coly.jdat.entities.events.FakeGuildMessageReceivedEvent;
-import dev.coly.jdat.entities.events.FakeSlashCommandEvent;
-import net.dv8tion.jda.api.entities.AbstractChannel;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.utils.data.DataArray;
-import net.dv8tion.jda.api.utils.data.DataObject;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.requests.restaction.MessageAction;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.interactions.CommandInteractionImpl;
-import net.dv8tion.jda.internal.utils.config.AuthorizationConfig;
+import org.jetbrains.annotations.NotNull;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
-/**
- * <p>Fake objects from JDA objects.</p>
- * <br>
- * <p><strong>IMPORTANT</strong></p>
- * <p>Not all methods are implemented in the fake JDA objects.</p>
- *
- */
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class JDAObjects {
 
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent}.
-     *
-     * @param message   The message that would trigger this event.
-     * @return          A fake {@link net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent}.
-     */
-    public static FakeGuildMessageReceivedEvent getFakeGuildMessageReceivedEvent(FakeMessage message) {
-        return new FakeGuildMessageReceivedEvent(getFakeJDA(), message);
+    public static SlashCommandInteractionEvent getSlashCommandInteractionEvent(MessageChannel channel, String command,
+                                                                               String subcommandName,
+                                                                               String subcommandGroup,
+                                                                               Map<String, Object> options,
+                                                                               Consumer<Message> messageCallback) {
+        SlashCommandInteractionEvent event = mock(SlashCommandInteractionEvent.class);
+        when(event.getCommandString()).thenAnswer(invocation -> command);
+        when(event.getSubcommandName()).thenAnswer(invocation -> subcommandName);
+        when(event.getSubcommandGroup()).thenAnswer(invocation -> subcommandGroup);
+        when(event.getChannel()).thenAnswer(invocation -> channel);
+
+        when(event.getOption(anyString())).thenAnswer(invocation -> {
+            OptionMapping mapping = mock(OptionMapping.class);
+            // why
+            when(mapping.getAsAttachment()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsString()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsBoolean()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsLong()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsInt()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsDouble()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsMentionable()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsMember()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsUser()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsRole()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsGuildChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsMessageChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsTextChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsNewsChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsThreadChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsAudioChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsVoiceChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsStageChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+
+            return mapping;
+        });
+
+        when(event.reply(anyString())).thenAnswer(invocation ->
+                getReplyCallbackAction(getMessage(invocation.getArgument(0), channel), messageCallback));
+        when(event.reply(any(Message.class))).thenAnswer(invocation ->
+                getReplyCallbackAction(invocation.getArgument(0), messageCallback));
+        when(event.replyEmbeds(anyList())).thenAnswer(invocation ->
+                getReplyCallbackAction(getMessage(null, invocation.getArgument(0), channel),
+                        messageCallback));
+        when(event.replyEmbeds(any(MessageEmbed.class), any(MessageEmbed[].class))).thenAnswer(invocation -> {
+            List<MessageEmbed> embeds = invocation.getArgument(1) == null ? new ArrayList<>() :
+                    Arrays.asList(invocation.getArgument(0));
+            embeds.add(invocation.getArgument(0));
+            return getReplyCallbackAction(getMessage(null, embeds, channel), messageCallback);
+        });
+
+        return event;
     }
 
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent}.
-     *
-     * @param contentRaw    The raw content of a message that would trigger this event.
-     * @return              A fake {@link net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent}.
-     */
-    public static FakeGuildMessageReceivedEvent getFakeGuildMessageReceivedEvent(String contentRaw) {
-        return new FakeGuildMessageReceivedEvent(getFakeJDA(), getFakeMessage(contentRaw));
+    private static ReplyCallbackAction getReplyCallbackAction(Message message, Consumer<Message> messageCallback) {
+        ReplyCallbackAction action = mock(ReplyCallbackAction.class);
+
+        Mockito.doAnswer(invocation -> {
+            messageCallback.accept(message);
+            return null;
+        }).when(action).queue();
+        return action;
     }
 
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.events.interaction.SlashCommandEvent}.
-     *
-     * @param command       The command that would be executed by a {@link User}.
-     * @param commandId     The id of the command that would be executed by a {@link User}.
-     * @param options       The options that the command would have.
-     * @return              a fake {@link net.dv8tion.jda.api.events.interaction.SlashCommandEvent}.
-     */
-    public static FakeSlashCommandEvent getFakeSlashCommandEvent(String command, long commandId, Map<String, Object> options) {
-        return new FakeSlashCommandEvent(getFakeJDA(), getFakeCommandInteraction(command, commandId, options));
+    public static MessageReceivedEvent getMessageReceivedEvent(MessageChannel channel, Message message, Member member) {
+        MessageReceivedEvent event = mock(MessageReceivedEvent.class);
+        when(event.getChannel()).thenAnswer(invocation -> channel);
+        when(event.getMessage()).thenAnswer(invocation -> message);
+        when(event.getMember()).thenAnswer(invocation -> member);
+        when(event.getAuthor()).thenAnswer(invocation -> member.getUser());
+        return event;
     }
 
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.events.interaction.SlashCommandEvent}.
-     *
-     * @param command           The command that would be executed by a {@link User}.
-     * @param commandId         The id of the command that would be executed by a {@link User}.
-     * @param options           The options that the command would have.
-     * @param subCommand        The last sub command for this command. This can not be null or empty is sub command
-     *                          group is not null and not empty.
-     * @param subCommandGroup   The last sub command group for this command.
-     * @return                  a fake {@link net.dv8tion.jda.api.events.interaction.SlashCommandEvent}.
-     */
-    public static FakeSlashCommandEvent getFakeSlashCommandEvent(String command, long commandId, Map<String, Object> options,
-                                                                 String subCommand, String subCommandGroup) {
-        return new FakeSlashCommandEvent(getFakeJDA(), getFakeCommandInteraction(command, commandId, options,
-                subCommand, subCommandGroup));
-    }
-
-    /**
-     * Return a fake {@link net.dv8tion.jda.api.JDA}.
-     *
-     * @return  A fake {@link net.dv8tion.jda.api.JDA}.
-     */
-    public static FakeJDA getFakeJDA() {
-        return new FakeJDA();
-    }
-
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.entities.Message}.
-     *
-     * @param channel       The {@link FakeTextChannel} the message would be send in.
-     * @param contentRaw    The raw content of the {@link net.dv8tion.jda.api.entities.Message},
-     * @return              A fake {@link net.dv8tion.jda.api.entities.Message}.
-     */
-    public static FakeMessage getFakeMessage(FakeTextChannel channel, String contentRaw) {
-        return new FakeMessage(channel, contentRaw);
-    }
-
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.entities.Message}. It will use a {@link FakeTextChannel} from
-     * {@link JDAObjects#getFakeTextChannel()}.
-     *
-     * @param contentRaw    The raw content of the {@link net.dv8tion.jda.api.entities.Message},
-     * @return              A fake {@link net.dv8tion.jda.api.entities.Message}.
-     */
-    public static FakeMessage getFakeMessage(String contentRaw) {
-        return new FakeMessage(getFakeTextChannel(), contentRaw);
-    }
-
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.entities.Message}.
-     *
-     * @param channel       The {@link FakeTextChannel} the message would be send in.
-     * @param messageEmbeds  A list of {@link MessageEmbed} that would be send.
-     * @return              A fake {@link net.dv8tion.jda.api.entities.Message}.
-     */
-    public static FakeMessage getFakeMessage(FakeTextChannel channel, List<MessageEmbed> messageEmbeds) {
-        return new FakeMessage(channel, messageEmbeds);
-    }
-
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.entities.Message}. It will use a {@link FakeTextChannel} from
-     * {@link JDAObjects#getFakeTextChannel()}.
-     *
-     * @param messageEmbeds  A list of {@link MessageEmbed} that would be send.
-     * @return              A fake {@link net.dv8tion.jda.api.entities.Message}.
-     */
-    public static FakeMessage getFakeMessage(Collection<? extends MessageEmbed> messageEmbeds) {
-        return new FakeMessage(getFakeTextChannel(), new ArrayList<>(messageEmbeds));
-    }
-
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.entities.TextChannel}.
-     *
-     * @return  A fake {@link net.dv8tion.jda.api.entities.TextChannel}.
-     */
-    public static FakeTextChannel getFakeTextChannel() {
-        return new FakeTextChannel(getFakeGuild(), "fake-text-channel");
-    }
-
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.entities.Guild}.
-     *
-     * @return  A fake {@link net.dv8tion.jda.api.entities.Guild}.
-     */
-    public static FakeGuild getFakeGuild() {
-        return new FakeGuild(getFakeJDA(), "Fake Guild");
-    }
-
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.entities.User}.
-     *
-     * @return  A fake {@link net.dv8tion.jda.api.entities.User}.
-     */
-    public static FakeUser getFakeUser() {
-        return new FakeUser();
-    }
-
-    /**
-     * Returns a fake {@link CommandInteractionImpl}. This can be only used as a slash command.
-     *
-     * @param command       The command that would be executed by a {@link User}.
-     * @param commandId     The id of the command that would be executed by a {@link User}.
-     * @param valueMapping  The options that the command would have.
-     * @return              a fake {@link CommandInteractionImpl}.
-     */
-    public static CommandInteractionImpl getFakeCommandInteraction(String command, long commandId,
-                                                                   Map<String, Object> valueMapping) {
-        return getFakeCommandInteraction(command, commandId, valueMapping, null, null);
-    }
-
-    /**
-     * Returns a fake {@link CommandInteractionImpl}. This can be only used as a slash command.
-     *
-     * @param command           The command that would be executed by a {@link User}.
-     * @param commandId         The id of the command that would be executed by a {@link User}.
-     * @param valueMapping      The options that the command would have.
-     * @param subCommand        The last sub command. This can not be null or empty is sub command group is not null
-     *                          and not empty.
-     * @param subCommandGroup   The last sub command group.
-     * @return                  a fake {@link CommandInteractionImpl}.
-     */
-    public static CommandInteractionImpl getFakeCommandInteraction(String command, long commandId,
-                                                                   Map<String, Object> valueMapping, String subCommand,
-                                                                   String subCommandGroup) {
-        DataObject dataObject = DataObject.empty();
-        dataObject.put("id", "0");
-        dataObject.put("token", "0");
-        dataObject.put("guild_id", 0);
-        dataObject.put("type", 1);
-        dataObject.put("channel_id", 0);
-        dataObject.put("user", DataObject.empty().put("id", "0").put("username", "User").put("discriminator", "0000"));
-
-        DataObject data = DataObject.empty();
-        data.put("id", commandId);
-        data.put("name", command);
-
-        DataObject resolved = DataObject.empty();
-        DataObject users = DataObject.empty();
-
-        List<DataObject> options = new LinkedList<>();
-        for (Map.Entry<String, Object> entry : valueMapping.entrySet()) {
-            DataObject option = DataObject.empty();
-            Object value = entry.getValue();
-
-            if (entry.getValue() instanceof String) {
-                option.put("type", 3);
-            } else if (value instanceof Long | entry.getValue() instanceof Integer) {
-                option.put("type", 4);
-            } else if (value instanceof Boolean) {
-                option.put("type", 5);
-            } else if (value instanceof User) {
-                option.put("type", 6);
-
-                User u = (User) value;
-
-                DataObject user = DataObject.empty();
-                user.put("id", u.getId());
-                user.put("username", u.getName());
-                user.put("discriminator", u.getDiscriminator());
-                user.put("bot", u.isBot());
-                user.put("system", u.isSystem());
-
-                users.put(u.getId(), user);
-
-                value = u.getIdLong();
-            } else if (value instanceof AbstractChannel) {
-                option.put("type", 7);
-                value = ((AbstractChannel) value).getId();
-            } else if (value instanceof Role) {
-                option.put("type", 8);
-                value = ((Role) value).getId();
-            } else if (value instanceof Double) {
-                option.put("type", 10);
-            } else {
-                option.put("type", 0);
-            }
-
-            option.put("name", entry.getKey());
-            option.put("value", value);
-            options.add(option);
+    @NotNull
+    public static JDA getJDA() {
+        try {
+            JDA jda = mock(JDAImpl.class);
+            when(jda.getStatus()).thenAnswer(invocation -> JDA.Status.CONNECTED);
+            when(jda.unloadUser(anyLong())).thenAnswer(invocation -> true);
+            when(jda.awaitReady()).thenAnswer(invocation -> jda);
+            when(jda.awaitStatus(any(JDA.Status.class))).thenAnswer(invocation -> jda);
+            when(jda.awaitStatus(any(JDA.Status.class), any(JDA.Status[].class))).thenAnswer(invocation -> jda);
+            return jda;
+        } catch (InterruptedException e) {
+            throw new RuntimeException("This should not be reachable", e);
         }
-        resolved.put("users", users);
-
-
-        if (subCommandGroup != null && !subCommandGroup.isEmpty()) {
-            if (subCommand == null || subCommand.isEmpty()) {
-                throw new IllegalArgumentException("Sub command can not be empty or null");
-            }
-
-            DataObject groupOption = DataObject.empty();
-            groupOption.put("type", 2);
-            groupOption.put("name", subCommandGroup);
-
-            DataObject subCommandOption = DataObject.empty();
-            subCommandOption.put("type", 1);
-            subCommandOption.put("name", subCommand);
-            subCommandOption.put("options", DataArray.empty().addAll(options));
-
-            groupOption.put("options", DataArray.empty().add(subCommandOption));
-            data.put("options", DataArray.empty().add(groupOption));
-        } else if (subCommand != null && !subCommand.isEmpty()) {
-            DataObject option = DataObject.empty();
-            option.put("type", 1);
-            option.put("name", subCommand);
-            option.put("options", DataArray.empty().addAll(options));
-            data.put("options", DataArray.empty().add(option));
-        } else {
-            data.put("options", DataArray.empty().addAll(options));
-        }
-
-        data.put("resolved", resolved);
-
-        dataObject.put("data", data);
-
-        return new CommandInteractionImpl(getFakeJDAImpl(), dataObject);
     }
 
-    /**
-     * Returns a fake {@link JDAImpl}. This only contains a {@link AuthorizationConfig} with the token "0".
-     *
-     * @return  a fake {@link JDAImpl}.
-     */
-    public static JDAImpl getFakeJDAImpl() {
-        return new FakeJDAImpl(new AuthorizationConfig("0"));
+    public static MessageChannel getMessageChannel(String name, long id, Consumer<Message> messageCallback) {
+        MessageChannel channel = mock(MessageChannel.class);
+        when(channel.getName()).thenAnswer(invocation -> name);
+        when(channel.getIdLong()).thenAnswer(invocation -> id);
+        when(channel.getId()).thenAnswer(invocation -> String.valueOf(id));
+
+        when(channel.sendMessage(any(Message.class)))
+                .thenAnswer(invocation -> getMessageAction(messageCallback,
+                        invocation.getArgument(0)));
+
+        when(channel.sendMessageEmbeds(any(MessageEmbed.class), any(MessageEmbed[].class)))
+                .thenAnswer(invocation -> {
+                    List<MessageEmbed> embeds = invocation.getArgument(1) == null ? new ArrayList<>() :
+                            Arrays.asList(invocation.getArgument(0));
+                    embeds.add(invocation.getArgument(0));
+                    return getMessageAction(messageCallback, getMessage(null, embeds, channel));
+                });
+
+        when(channel.sendMessageEmbeds(anyList()))
+                .thenAnswer(invocation -> getMessageAction(messageCallback,
+                        getMessage(null, invocation.getArgument(0), channel)));
+
+        return channel;
     }
 
-    /**
-     * Returns a fake {@link net.dv8tion.jda.api.entities.SelfUser}.
-     *
-     * @return  a fake {@link net.dv8tion.jda.api.entities.SelfUser}.
-     */
-    public static FakeSelfUser getFakeSelfUser() {
-        return new FakeSelfUser();
+    public static MessageAction getMessageAction(Consumer<Message> messageCallback, Message message) {
+        MessageAction messageAction = mock(MessageAction.class);
+        Mockito.doAnswer(invocation -> {
+            messageCallback.accept(message);
+            return null;
+        }).when(messageAction).queue();
+        return messageAction;
+    }
+
+    public static Message getMessage(String content, MessageChannel channel) {
+        return getMessage(content, new ArrayList<>(), channel);
+    }
+
+    public static Message getMessage(String content, List<MessageEmbed> embeds, MessageChannel channel) {
+        Message message = mock(Message.class);
+        when(message.getContentRaw()).thenAnswer(invocation -> content);
+        when(message.getContentDisplay()).thenAnswer(invocation -> content);
+        when(message.getContentStripped()).thenAnswer(invocation -> content);
+        when(message.getChannel()).thenAnswer(invocation -> channel);
+        when(message.getEmbeds()).thenAnswer(invocation -> embeds);
+        return message;
+    }
+
+    public static Member getMember(String name, String discriminator) {
+        Member member = mock(Member.class);
+        when(member.getEffectiveName()).thenAnswer(invocation -> name);
+        when(member.getNickname()).thenAnswer(invocation -> name);
+
+        User user = mock(User.class);
+        when(user.getName()).thenAnswer(invocation -> name);
+        when(user.getDiscriminator()).thenAnswer(invocation -> discriminator);
+
+        when(member.getUser()).thenAnswer(invocation -> user);
+
+        return member;
     }
 
 }
