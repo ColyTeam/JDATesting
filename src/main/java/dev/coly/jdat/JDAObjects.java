@@ -18,6 +18,7 @@ import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -25,12 +26,30 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.description;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * A class for provided mocked JDA objects.
+ * <br>
+ * <strong>Note: not all methods are currently mocked. Calling some methods will result in undefined behavior.</strong>
+ *
+ */
 public class JDAObjects {
 
+    /**
+     * Get a mocked {@link SlashCommandInteractionEvent}.
+     *
+     * @param channel           the channel this event would be executed.
+     * @param name              the name of the slash command.
+     * @param subcommandName    the name of the subcommand of the slash command.
+     * @param subcommandGroup   the subcommand group of the slash command.
+     * @param options           a map with all options for the slash command a user would have inputted.
+     * @param messageCallback   a callback to receive messages that would be sent back to the channel with
+     *                          {@link MessageChannel#sendMessage(Message)} or
+     *                          {@link MessageChannel#sendMessageEmbeds(Collection)} for example.
+     * @return                  a mocked {@link SlashCommandInteractionEvent}.
+     */
     public static SlashCommandInteractionEvent getSlashCommandInteractionEvent(MessageChannel channel, String name,
                                                                                String subcommandName,
                                                                                String subcommandGroup,
@@ -84,6 +103,13 @@ public class JDAObjects {
         return event;
     }
 
+    /**
+     * Get a mocked {@link ReplyCallbackAction}.
+     *
+     * @param message           the message that this reply should produce.
+     * @param messageCallback   the callback for receiving the message.
+     * @return                  a mocked {@link ReplyCallbackAction}.
+     */
     private static ReplyCallbackAction getReplyCallbackAction(Message message, Callback<Message> messageCallback) {
         ReplyCallbackAction action = mock(ReplyCallbackAction.class);
 
@@ -94,6 +120,14 @@ public class JDAObjects {
         return action;
     }
 
+    /**
+     * Get a mocked {@link MessageReceivedEvent}.
+     *
+     * @param channel   the channel the message would be sent in.
+     * @param message   the message that would be sent.
+     * @param member    the member that would send this message.
+     * @return          a mocked {@link MessageReceivedEvent}.
+     */
     public static MessageReceivedEvent getMessageReceivedEvent(MessageChannel channel, Message message, Member member) {
         MessageReceivedEvent event = mock(MessageReceivedEvent.class);
         when(event.getChannel()).thenAnswer(invocation -> channel);
@@ -103,6 +137,11 @@ public class JDAObjects {
         return event;
     }
 
+    /**
+     * Get a mocked {@link JDA}.
+     *
+     * @return  a mocked {@link JDA}.
+     */
     @NotNull
     public static JDA getJDA() {
         try {
@@ -118,6 +157,15 @@ public class JDAObjects {
         }
     }
 
+    /**
+     * Get a mocked {@link MessageChannel}.
+     *
+     * @param name              the name of the channel.
+     * @param id                the id of the channel.
+     * @param messageCallback   the callback used for returning the {@link Message} when for example
+     *                          {@link MessageChannel#sendMessage(Message)} or other methods are called.
+     * @return                  a mocked {@link MessageChannel}.
+     */
     public static MessageChannel getMessageChannel(String name, long id, Callback<Message> messageCallback) {
         MessageChannel channel = mock(MessageChannel.class);
         when(channel.getName()).thenAnswer(invocation -> name);
@@ -147,6 +195,14 @@ public class JDAObjects {
         return channel;
     }
 
+    /**
+     * Get a mocked {@link MessageAction}.
+     *
+     * @param messageCallback   the message callback that well return the {@link Message} when
+     *                          {@link MessageAction#queue()} is executed.
+     * @param message           the message that will be used by the {@link Callback}.
+     * @return                  a mocked {@link MessageAction}.
+     */
     public static MessageAction getMessageAction(Callback<Message> messageCallback, Message message) {
         MessageAction messageAction = mock(MessageAction.class);
         Mockito.doAnswer(invocation -> {
@@ -156,10 +212,25 @@ public class JDAObjects {
         return messageAction;
     }
 
+    /**
+     * Get a mocked {@link Message}.
+     *
+     * @param content   the content of the message. This is the raw, displayed and stripped content.
+     * @param channel   the {@link MessageChannel} the message would be sent in.
+     * @return          a mocked {@link Message}.
+     */
     public static Message getMessage(String content, MessageChannel channel) {
         return getMessage(content, new ArrayList<>(), channel);
     }
 
+    /**
+     * Get a mocked {@link Message}.
+     *
+     * @param content   the content of the message. This is the raw, displayed and stripped content.
+     * @param embeds    a list of {@link MessageEmbed}s that this message contains.
+     * @param channel   the {@link MessageChannel} the message would be sent in.
+     * @return          a mocked {@link Message}.
+     */
     public static Message getMessage(String content, List<MessageEmbed> embeds, MessageChannel channel) {
         Message message = mock(Message.class);
         when(message.getContentRaw()).thenAnswer(invocation -> content);
@@ -170,6 +241,13 @@ public class JDAObjects {
         return message;
     }
 
+    /**
+     * Get a mocked {@link Member}. To get a mocked {@link User} use {@link Member#getUser()}.
+     *
+     * @param name          the name of the user.
+     * @param discriminator the discriminator of the user.
+     * @return              a mocked {@link Member}.
+     */
     public static Member getMember(String name, String discriminator) {
         Member member = mock(Member.class);
         when(member.getEffectiveName()).thenAnswer(invocation -> name);
