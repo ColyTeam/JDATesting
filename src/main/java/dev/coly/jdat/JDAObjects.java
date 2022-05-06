@@ -1,5 +1,6 @@
 package dev.coly.jdat;
 
+import dev.coly.util.Callback;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -19,24 +20,24 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.description;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class JDAObjects {
 
-    public static SlashCommandInteractionEvent getSlashCommandInteractionEvent(MessageChannel channel, String command,
+    public static SlashCommandInteractionEvent getSlashCommandInteractionEvent(MessageChannel channel, String name,
                                                                                String subcommandName,
                                                                                String subcommandGroup,
                                                                                Map<String, Object> options,
-                                                                               Consumer<Message> messageCallback) {
+                                                                               Callback<Message> messageCallback) {
         SlashCommandInteractionEvent event = mock(SlashCommandInteractionEvent.class);
-        when(event.getCommandString()).thenAnswer(invocation -> command);
+        when(event.getName()).thenAnswer(invocation -> name);
         when(event.getSubcommandName()).thenAnswer(invocation -> subcommandName);
         when(event.getSubcommandGroup()).thenAnswer(invocation -> subcommandGroup);
         when(event.getChannel()).thenAnswer(invocation -> channel);
@@ -74,8 +75,8 @@ public class JDAObjects {
                 getReplyCallbackAction(getMessage(null, invocation.getArgument(0), channel),
                         messageCallback));
         when(event.replyEmbeds(any(MessageEmbed.class), any(MessageEmbed[].class))).thenAnswer(invocation -> {
-            List<MessageEmbed> embeds = invocation.getArgument(1) == null ? new ArrayList<>() :
-                    Arrays.asList(invocation.getArgument(0));
+            List<MessageEmbed> embeds = invocation.getArguments().length == 1 ? new ArrayList<>() :
+                    Arrays.asList(invocation.getArgument(1));
             embeds.add(invocation.getArgument(0));
             return getReplyCallbackAction(getMessage(null, embeds, channel), messageCallback);
         });
@@ -83,11 +84,11 @@ public class JDAObjects {
         return event;
     }
 
-    private static ReplyCallbackAction getReplyCallbackAction(Message message, Consumer<Message> messageCallback) {
+    private static ReplyCallbackAction getReplyCallbackAction(Message message, Callback<Message> messageCallback) {
         ReplyCallbackAction action = mock(ReplyCallbackAction.class);
 
         Mockito.doAnswer(invocation -> {
-            messageCallback.accept(message);
+            messageCallback.callback(message);
             return null;
         }).when(action).queue();
         return action;
@@ -117,11 +118,15 @@ public class JDAObjects {
         }
     }
 
-    public static MessageChannel getMessageChannel(String name, long id, Consumer<Message> messageCallback) {
+    public static MessageChannel getMessageChannel(String name, long id, Callback<Message> messageCallback) {
         MessageChannel channel = mock(MessageChannel.class);
         when(channel.getName()).thenAnswer(invocation -> name);
         when(channel.getIdLong()).thenAnswer(invocation -> id);
         when(channel.getId()).thenAnswer(invocation -> String.valueOf(id));
+
+        when(channel.sendMessage(any(CharSequence.class)))
+                .thenAnswer(invocation -> getMessageAction(messageCallback,
+                        getMessage(invocation.getArgument(0), channel)));
 
         when(channel.sendMessage(any(Message.class)))
                 .thenAnswer(invocation -> getMessageAction(messageCallback,
@@ -129,8 +134,8 @@ public class JDAObjects {
 
         when(channel.sendMessageEmbeds(any(MessageEmbed.class), any(MessageEmbed[].class)))
                 .thenAnswer(invocation -> {
-                    List<MessageEmbed> embeds = invocation.getArgument(1) == null ? new ArrayList<>() :
-                            Arrays.asList(invocation.getArgument(0));
+                    List<MessageEmbed> embeds = invocation.getArguments().length == 1 ? new ArrayList<>() :
+                            Arrays.asList(invocation.getArgument(1));
                     embeds.add(invocation.getArgument(0));
                     return getMessageAction(messageCallback, getMessage(null, embeds, channel));
                 });
@@ -142,10 +147,10 @@ public class JDAObjects {
         return channel;
     }
 
-    public static MessageAction getMessageAction(Consumer<Message> messageCallback, Message message) {
+    public static MessageAction getMessageAction(Callback<Message> messageCallback, Message message) {
         MessageAction messageAction = mock(MessageAction.class);
         Mockito.doAnswer(invocation -> {
-            messageCallback.accept(message);
+            messageCallback.callback(message);
             return null;
         }).when(messageAction).queue();
         return messageAction;
@@ -173,6 +178,7 @@ public class JDAObjects {
         User user = mock(User.class);
         when(user.getName()).thenAnswer(invocation -> name);
         when(user.getDiscriminator()).thenAnswer(invocation -> discriminator);
+        when(user.getAsTag()).thenAnswer(invocation -> name + "#" + discriminator);
 
         when(member.getUser()).thenAnswer(invocation -> user);
 

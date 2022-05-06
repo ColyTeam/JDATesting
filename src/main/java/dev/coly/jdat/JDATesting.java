@@ -1,5 +1,6 @@
 package dev.coly.jdat;
 
+import dev.coly.util.Callback;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -9,13 +10,10 @@ import net.dv8tion.jda.api.hooks.EventListener;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 /**
  * This class should be used in testing. It creates fake {@link net.dv8tion.jda.api.events.Event}s and other JDA objects
@@ -35,12 +33,7 @@ public class JDATesting {
      *                              interrupted if the thread is interrupted.
      */
     public static Message testMessageReceivedEvent(EventListener listener, String input) throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<Message> returnMessage = new AtomicReference<>();
-        Consumer<Message> messageCallback = msg -> {
-            returnMessage.set(msg);
-            latch.countDown();
-        };
+        Callback<Message> messageCallback = new Callback<>();
 
         MessageChannel channel = JDAObjects.getMessageChannel("test-chanel", 0L, messageCallback);
         Message message = JDAObjects.getMessage(input, new ArrayList<>(), channel);
@@ -48,8 +41,7 @@ public class JDATesting {
                 JDAObjects.getMember("Test User", "0000"));
 
         listener.onEvent(event);
-        messageCallback.wait();
-        return returnMessage.get();
+        return messageCallback.await();
     }
 
     /**
@@ -85,23 +77,17 @@ public class JDATesting {
         }
     }
 
-    public static Message testSlashCommandEvent(EventListener listener, String command, String subcommand,
+    public static Message testSlashCommandEvent(EventListener listener, String name, String subcommand,
                                              String subcommandGroup, Map<String, Object> options)
             throws InterruptedException {
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<Message> returnMessage = new AtomicReference<>();
-        Consumer<Message> messageCallback = msg -> {
-            returnMessage.set(msg);
-            latch.countDown();
-        };
+        Callback<Message> messageCallback = new Callback<>();
 
         MessageChannel channel = JDAObjects.getMessageChannel("test-chanel", 0L, messageCallback);
-        SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(channel, command, subcommand,
+        SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(channel, name, subcommand,
                 subcommandGroup, options, messageCallback);
 
         listener.onEvent(event);
-        messageCallback.wait();
-        return returnMessage.get();
+        return messageCallback.await();
     }
 
     /**

@@ -1,12 +1,11 @@
 package dev.coly.jdat;
 
+import dev.coly.util.Callback;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -29,7 +28,7 @@ public class TestJDAObjects {
         map.put("int", 1);
         map.put("double", 1d);
         SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(null, "command",
-                "subcommand", "subcommandGroup", map, message -> {});
+                "subcommand", "subcommandGroup", map, new Callback<>());
         Assertions.assertEquals("penis", Objects.requireNonNull(event.getOption("string")).getAsString());
         Assertions.assertTrue(Objects.requireNonNull(event.getOption("boolean")).getAsBoolean());
         Assertions.assertEquals(1L, Objects.requireNonNull(event.getOption("long")).getAsLong());

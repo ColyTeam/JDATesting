@@ -21,7 +21,7 @@ public class TestSlashCommands {
         Map<String, Object> map = new HashMap<>();
         map.put("bool", true);
         map.put("str", "text");
-        map.put("number", 42);
+        map.put("number", 42L);
         map.put("user", JDAObjects.getMember("User", "0000").getUser());
         JDATesting.assertSlashCommandEvent(new TestEventListener(), "options", map,
                 "bool: true - str: text - number: 42 - user: User#0000");

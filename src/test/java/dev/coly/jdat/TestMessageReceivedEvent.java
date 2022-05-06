@@ -40,7 +40,7 @@ public class TestMessageReceivedEvent {
     }
 
     @Test
-    public void testAssertGuildMessageReceivedEventWithEmbeds() {
+    public void testAssertMessageReceivedEventWithEmbeds() {
         JDATesting.assertGuildMessageReceivedEvent(new TestEventListener(), ".embed",
                 new ArrayList<>(Collections.singleton(TestEventListener.getTestEmbed())));
     }
