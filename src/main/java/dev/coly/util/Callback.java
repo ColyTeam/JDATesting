@@ -1,6 +1,7 @@
 package dev.coly.util;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class Callback<T> {
 
@@ -18,6 +19,13 @@ public class Callback<T> {
 
     public T await() throws InterruptedException {
         this.countDownLatch.await();
+        return object;
+    }
+
+    public T await(long timeout, TimeUnit timeUnit) throws InterruptedException {
+        if (!this.countDownLatch.await(timeout, timeUnit)) {
+            throw new InterruptedException("Timeout elapsed");
+        }
         return object;
     }
 

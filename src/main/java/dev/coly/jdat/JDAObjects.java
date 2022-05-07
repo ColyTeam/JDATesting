@@ -45,7 +45,7 @@ public class JDAObjects {
      * @param subcommandName    the name of the subcommand of the slash command.
      * @param subcommandGroup   the subcommand group of the slash command.
      * @param options           a map with all options for the slash command a user would have inputted.
-     * @param messageCallback   a callback to receive messages that would be sent back to the channel with
+     * @param messageCallback   a callback to receive messages that would be sent back to the channel with.
      *                          {@link MessageChannel#sendMessage(Message)} or
      *                          {@link MessageChannel#sendMessageEmbeds(Collection)} for example.
      * @return                  a mocked {@link SlashCommandInteractionEvent}.
@@ -55,6 +55,31 @@ public class JDAObjects {
                                                                                String subcommandGroup,
                                                                                Map<String, Object> options,
                                                                                Callback<Message> messageCallback) {
+        return getSlashCommandInteractionEvent(channel, name, subcommandName, subcommandGroup, options, messageCallback,
+                new Callback<>());
+    }
+
+    /**
+     * Get a mocked {@link SlashCommandInteractionEvent}.
+     *
+     * @param channel           the channel this event would be executed.
+     * @param name              the name of the slash command.
+     * @param subcommandName    the name of the subcommand of the slash command.
+     * @param subcommandGroup   the subcommand group of the slash command.
+     * @param options           a map with all options for the slash command a user would have inputted.
+     * @param messageCallback   a callback to receive messages that would be sent back to the channel with.
+     * @param deferReply        a callback that is called when a deferred reply is called. The boolean is true when
+     *                          the message is ephemeral and false if not.
+     *                          {@link MessageChannel#sendMessage(Message)} or
+     *                          {@link MessageChannel#sendMessageEmbeds(Collection)} for example.
+     * @return                  a mocked {@link SlashCommandInteractionEvent}.
+     */
+    public static SlashCommandInteractionEvent getSlashCommandInteractionEvent(MessageChannel channel, String name,
+                                                                               String subcommandName,
+                                                                               String subcommandGroup,
+                                                                               Map<String, Object> options,
+                                                                               Callback<Message> messageCallback,
+                                                                               Callback<Boolean> deferReply) {
         SlashCommandInteractionEvent event = mock(SlashCommandInteractionEvent.class);
         when(event.getName()).thenAnswer(invocation -> name);
         when(event.getSubcommandName()).thenAnswer(invocation -> subcommandName);
@@ -98,6 +123,16 @@ public class JDAObjects {
                     Arrays.asList(invocation.getArgument(1));
             embeds.add(invocation.getArgument(0));
             return getReplyCallbackAction(getMessage(null, embeds, channel), messageCallback);
+        });
+
+        when(event.deferReply()).thenAnswer(invocation -> {
+            deferReply.callback(false);
+            return mock(ReplyCallbackAction.class);
+        });
+
+        when(event.deferReply(any(Boolean.class))).thenAnswer(invocation -> {
+            deferReply.callback(invocation.getArgument(0));
+            return mock(ReplyCallbackAction.class);
         });
 
         return event;
