@@ -1,49 +1,39 @@
 package dev.coly.jdat;
 
-import dev.coly.jdat.entities.events.FakeGuildMessageReceivedEvent;
-import dev.coly.jdat.entities.events.FakeSlashCommandEvent;
+import dev.coly.util.Callback;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class TestJDAObjects {
 
     @Test
-    public void testFakeGuildMessageReceivedEvent() {
-        FakeGuildMessageReceivedEvent event = JDAObjects.getFakeGuildMessageReceivedEvent(".ping");
-        new TestEventListener().onEvent(event);
-        try {
-            Assertions.assertEquals("Pong!", event.awaitReturn().getContentRaw());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            Assertions.fail(e);
-        }
+    public void testGetJDA() {
+        JDA jda = JDAObjects.getJDA();
+        Assertions.assertEquals(0L, jda.getGatewayPing());
+        Assertions.assertTrue(jda.unloadUser(0L));
     }
 
     @Test
-    public void testFakeSlashCommandEvent() {
-        FakeSlashCommandEvent event = JDAObjects.getFakeSlashCommandEvent("ping", 0, new HashMap<>());
-        new TestEventListener().onEvent(event);
-        try {
-            Assertions.assertEquals("Pong!", event.awaitReturn().getMessage().getContentRaw());
-        } catch (InterruptedException e) {
-            Assertions.fail(e);
-        }
-    }
-
-    @Test
-    public void testFakeSlashCommandEventWithSubCommand() {
-        FakeSlashCommandEvent event = JDAObjects.getFakeSlashCommandEvent("ping", 0, new HashMap<>(),
-                "sub-command", "sub-command-group");
-        new TestEventListener().onEvent(event);
-        try {
-            Assertions.assertEquals("sub-command", event.getSubcommandName());
-            Assertions.assertEquals("sub-command-group", event.getSubcommandGroup());
-            Assertions.assertEquals("Pong!", event.awaitReturn().getMessage().getContentRaw());
-        } catch (InterruptedException e) {
-            Assertions.fail(e);
-        }
+    public void testGetSlashCommandInteractionEventOptions() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("string", "penis");
+        map.put("boolean", true);
+        map.put("long", 1L);
+        map.put("int", 1);
+        map.put("double", 1d);
+        SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(null, "command",
+                "subcommand", "subcommandGroup", map, new Callback<>());
+        Assertions.assertEquals("penis", Objects.requireNonNull(event.getOption("string")).getAsString());
+        Assertions.assertTrue(Objects.requireNonNull(event.getOption("boolean")).getAsBoolean());
+        Assertions.assertEquals(1L, Objects.requireNonNull(event.getOption("long")).getAsLong());
+        Assertions.assertEquals(1, Objects.requireNonNull(event.getOption("int")).getAsInt());
+        Assertions.assertEquals(1d, Objects.requireNonNull(event.getOption("double")).getAsDouble());
     }
 
 }

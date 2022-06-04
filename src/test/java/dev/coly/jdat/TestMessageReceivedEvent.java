@@ -7,27 +7,27 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-public class TestGuildMessageReceivedEvent {
+public class TestMessageReceivedEvent {
 
     @Test
-    public void testTestGuildMessageReceivedEvent() {
+    public void testTestMessageReceivedEvent() {
         try {
             Assertions.assertEquals("Pong!",
-                    JDATesting.testGuildMessageReceivedEvent(new TestEventListener(), ".ping").getContentRaw());
+                    JDATesting.testMessageReceivedEvent(new TestEventListener(), ".ping").getContentRaw());
         } catch (InterruptedException e) {
             Assertions.fail(e);
         }
     }
 
     @Test
-    public void testAssertGuildMessageReceivedEvent() {
+    public void testAssertMessageReceivedEvent() {
         JDATesting.assertGuildMessageReceivedEvent(new TestEventListener(), ".ping", "Pong!");
     }
 
     @Test
-    public void testTestGuildMessageReceivedEventWithEmbeds() {
+    public void testTestMessageReceivedEventWithEmbeds() {
         try {
-            Message message = JDATesting.testGuildMessageReceivedEvent(new TestEventListener(), ".embed");
+            Message message = JDATesting.testMessageReceivedEvent(new TestEventListener(), ".embed");
             MessageEmbed embed = message.getEmbeds().get(0);
             Assertions.assertEquals("Test Embed", embed.getTitle());
             Assertions.assertEquals("Coly Team", Objects.requireNonNull(embed.getAuthor()).getName());
@@ -40,7 +40,7 @@ public class TestGuildMessageReceivedEvent {
     }
 
     @Test
-    public void testAssertGuildMessageReceivedEventWithEmbeds() {
+    public void testAssertMessageReceivedEventWithEmbeds() {
         JDATesting.assertGuildMessageReceivedEvent(new TestEventListener(), ".embed",
                 new ArrayList<>(Collections.singleton(TestEventListener.getTestEmbed())));
     }
