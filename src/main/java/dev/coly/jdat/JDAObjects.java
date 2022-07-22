@@ -6,7 +6,11 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.NewsChannel;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -14,6 +18,7 @@ import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.internal.JDAImpl;
 import org.jetbrains.annotations.NotNull;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
@@ -28,6 +33,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 /**
  * A class for provided mocked JDA objects.
@@ -99,14 +105,7 @@ public class JDAObjects {
             when(mapping.getAsMember()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
             when(mapping.getAsUser()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
             when(mapping.getAsRole()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsGuildChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsMessageChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsTextChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsNewsChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsThreadChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsAudioChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsVoiceChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsStageChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
+            when(mapping.getAsChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
 
             return mapping;
         });
@@ -202,7 +201,8 @@ public class JDAObjects {
      * @return                  a mocked {@link MessageChannel}.
      */
     public static MessageChannel getMessageChannel(String name, long id, Callback<Message> messageCallback) {
-        MessageChannel channel = mock(MessageChannel.class);
+        MessageChannel channel = mock(MessageChannel.class, withSettings()
+                .extraInterfaces(TextChannel.class, NewsChannel.class, MessageChannelUnion.class));
         when(channel.getName()).thenAnswer(invocation -> name);
         when(channel.getIdLong()).thenAnswer(invocation -> id);
         when(channel.getId()).thenAnswer(invocation -> String.valueOf(id));
@@ -296,6 +296,29 @@ public class JDAObjects {
         when(member.getUser()).thenAnswer(invocation -> user);
 
         return member;
+    }
+
+    /**
+     * Get a mocked {@link GuildChannelUnion}.
+     *
+     * @param name  the name of the channel
+     * @param id    the id of the channel
+     * @return      the mocked {@link GuildChannelUnion}
+     */
+    public static GuildChannelUnion getGuildChannelUnion(String name, long id, Callback<Message> callback) {
+        GuildChannelUnion channelUnion = mock(GuildChannelUnion.class);
+
+        when(channelUnion.getName()).thenAnswer(invocation -> name);
+        when(channelUnion.getId()).thenAnswer(invocation -> id + "");
+        when(channelUnion.getIdLong()).thenAnswer(invocation -> id);
+
+        TextChannel channel = (TextChannel) getMessageChannel(name, id, callback);
+
+        when(channelUnion.asTextChannel()).thenAnswer(invocation -> channel);
+        when(channelUnion.asGuildMessageChannel()).thenAnswer(invocation -> channel);
+        when(channelUnion.asNewsChannel()).thenAnswer(invocation -> channel);
+
+        return channelUnion;
     }
 
 }
