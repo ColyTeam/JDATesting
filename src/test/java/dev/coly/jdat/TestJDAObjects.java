@@ -2,6 +2,7 @@ package dev.coly.jdat;
 
 import dev.coly.util.Callback;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,18 @@ public class TestJDAObjects {
         Assertions.assertEquals(1L, Objects.requireNonNull(event.getOption("long")).getAsLong());
         Assertions.assertEquals(1, Objects.requireNonNull(event.getOption("int")).getAsInt());
         Assertions.assertEquals(1d, Objects.requireNonNull(event.getOption("double")).getAsDouble());
+    }
+
+    @Test
+    public void testGetGuildChannelUnion() {
+        GuildChannelUnion guildChannelUnion = JDAObjects.getGuildChannelUnion("test-channel", 42,
+                new Callback<>());
+        Assertions.assertEquals("test-channel", guildChannelUnion.getName());
+        Assertions.assertEquals("42", guildChannelUnion.getId());
+        Assertions.assertEquals(42, guildChannelUnion.getIdLong());
+        Assertions.assertNotNull(guildChannelUnion.asTextChannel());
+        Assertions.assertNotNull(guildChannelUnion.asGuildMessageChannel());
+        Assertions.assertNotNull(guildChannelUnion.asNewsChannel());
     }
 
 }
