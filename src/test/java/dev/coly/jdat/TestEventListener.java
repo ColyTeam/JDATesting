@@ -23,21 +23,14 @@ public class TestEventListener extends ListenerAdapter {
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent e) {
         switch (e.getName()) {
-            case "embed":
-                e.replyEmbeds(getTestEmbed()).queue();
-                break;
-            case "ping":
-                e.reply("Pong!").queue();
-                break;
-            case "options":
-                e.reply("bool: " + Objects.requireNonNull(e.getOption("bool")).getAsBoolean() +
-                        " - str: " + Objects.requireNonNull(e.getOption("str")).getAsString() +
-                        " - number: " + Objects.requireNonNull(e.getOption("number")).getAsLong() +
-                        " - user: " + Objects.requireNonNull(e.getOption("user")).getAsUser().getAsTag()).queue();
-                break;
-            case "defer":
-                e.deferReply().queue();
-                break;
+            case "embed" -> e.replyEmbeds(getTestEmbed()).queue();
+            case "ping" -> e.reply("Pong!").queue();
+            case "options" -> e.reply("bool: " + Objects.requireNonNull(e.getOption("bool")).getAsBoolean() +
+                    " - str: " + Objects.requireNonNull(e.getOption("str")).getAsString() +
+                    " - number: " + Objects.requireNonNull(e.getOption("number")).getAsLong() +
+                    " - user: " + Objects.requireNonNull(e.getOption("user")).getAsUser().getAsTag()).queue();
+            case "defer" -> e.deferReply().queue();
+            case "ephemeral" -> e.reply("Test").setEphemeral(true).queue();
         }
     }
 

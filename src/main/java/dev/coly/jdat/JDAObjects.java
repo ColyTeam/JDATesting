@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.requests.restaction.MessageAction;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.internal.JDAImpl;
 import org.jetbrains.annotations.NotNull;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
@@ -28,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -151,6 +151,11 @@ public class JDAObjects {
             messageCallback.callback(message);
             return null;
         }).when(action).queue();
+
+        when(action.setEphemeral(anyBoolean())).thenAnswer(invocation -> {
+           when(message.isEphemeral()).thenReturn(true);
+           return action;
+        });
         return action;
     }
 

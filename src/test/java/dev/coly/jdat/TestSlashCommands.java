@@ -1,6 +1,8 @@
 package dev.coly.jdat;
 
 import dev.coly.util.Callback;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -63,6 +65,21 @@ public class TestSlashCommands {
         new TestEventListener().onEvent(event);
         try {
             Assertions.assertFalse(callback.await(100L, TimeUnit.MILLISECONDS));
+        } catch (InterruptedException e) {
+            Assertions.fail(e);
+        }
+    }
+
+    @Test
+    public void testSlashCommandWithEphemeral() {
+        Callback<Message> callback = new Callback<>();
+        MessageChannel messageChannel = JDAObjects.getMessageChannel("channel", 1L, callback);
+        SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(messageChannel, "ephemeral",
+                null, null, null, callback);
+        new TestEventListener().onEvent(event);
+        try {
+            Message message = callback.await(100L, TimeUnit.MILLISECONDS);
+            Assertions.assertTrue(message.isEphemeral());
         } catch (InterruptedException e) {
             Assertions.fail(e);
         }
