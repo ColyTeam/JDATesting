@@ -6,7 +6,7 @@
 
     <groupId>dev.coly</groupId>
     <artifactId>JDATesting</artifactId>
-    <version>0.4.2</version>
+    <version>0.4.3</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
