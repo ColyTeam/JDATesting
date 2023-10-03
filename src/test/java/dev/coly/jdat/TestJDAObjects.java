@@ -2,12 +2,14 @@ package dev.coly.jdat;
 
 import dev.coly.util.Callback;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -18,6 +20,14 @@ public class TestJDAObjects {
         JDA jda = JDAObjects.getJDA();
         Assertions.assertEquals(0L, jda.getGatewayPing());
         Assertions.assertTrue(jda.unloadUser(0L));
+        Assertions.assertEquals("Test", jda.getSelfUser().getName());
+        Assertions.assertEquals("0000", jda.getSelfUser().getDiscriminator());
+        Assertions.assertEquals("Test#0000", jda.getSelfUser().getAsTag());
+        Assertions.assertEquals("http://fake.url", jda.getInviteUrl());
+        Assertions.assertEquals("http://fake.url", jda.getInviteUrl(Permission.ADMINISTRATOR));
+        Assertions.assertEquals("http://fake.url",
+                jda.getInviteUrl(Permission.ADMINISTRATOR, Permission.MANAGE_PERMISSIONS));
+        Assertions.assertEquals("http://fake.url", jda.getInviteUrl(List.of(Permission.ADMINISTRATOR)));
     }
 
     @Test

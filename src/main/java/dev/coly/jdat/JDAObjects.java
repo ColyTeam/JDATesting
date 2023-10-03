@@ -2,8 +2,10 @@ package dev.coly.jdat;
 
 import dev.coly.util.Callback;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.SelfUser;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
@@ -19,6 +21,7 @@ import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.internal.JDAImpl;
 import org.jetbrains.annotations.NotNull;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
@@ -29,6 +32,7 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -37,9 +41,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
 /**
- * A class for provided mocked JDA objects.
- * <br>
- * <strong>Note: not all methods are currently mocked. Calling some methods will result in undefined behavior.</strong>
  *
  */
 public class JDAObjects {
@@ -179,12 +180,27 @@ public class JDAObjects {
     }
 
     /**
-     * Get a mocked {@link JDA}.
+     * Get a mocked instance of JDA.
      *
-     * @return  a mocked {@link JDA}.
+     * @return a mocked instance of {@link JDA}.
      */
     @NotNull
     public static JDA getJDA() {
+        return getJDA("Test", "0000");
+    }
+
+
+
+    /**
+     * Get a mocked instance of JDA with the specified name and discriminator.
+     *
+     * @param name              the name of the self user.
+     * @param discriminator     the discriminator of the self user.
+     * @return                  a mocked instance of {@link JDA}.
+     * @throws RuntimeException if interrupted while awaiting ready status.
+     */
+    @NotNull
+    public static JDA getJDA(String name, String discriminator) {
         try {
             JDA jda = mock(JDAImpl.class);
             when(jda.getStatus()).thenAnswer(invocation -> JDA.Status.CONNECTED);
@@ -192,6 +208,9 @@ public class JDAObjects {
             when(jda.awaitReady()).thenAnswer(invocation -> jda);
             when(jda.awaitStatus(any(JDA.Status.class))).thenAnswer(invocation -> jda);
             when(jda.awaitStatus(any(JDA.Status.class), any(JDA.Status[].class))).thenAnswer(invocation -> jda);
+            when(jda.getSelfUser()).thenAnswer(invocation -> getSelfUser(name, discriminator));
+            when(jda.getInviteUrl(any(Permission[].class))).thenAnswer(invocation -> "http://fake.url");
+            when(jda.getInviteUrl(anyCollection())).thenAnswer(invocation -> "http://fake.url");
             return jda;
         } catch (InterruptedException e) {
             throw new RuntimeException("This should not be reachable", e);
@@ -326,6 +345,26 @@ public class JDAObjects {
         when(channelUnion.asNewsChannel()).thenAnswer(invocation -> channel);
 
         return channelUnion;
+    }
+
+    /**
+     * Get a mocked {@link SelfUser}.
+     *
+     * @param name          the name of the user.
+     * @param discriminator the discriminator of the user.
+     * @return              a mocked {@link SelfUser}.
+     */
+    @NotNull
+    public static SelfUser getSelfUser(String name, String discriminator) {
+        SelfUser selfUser = mock(SelfUser.class);
+
+        when(selfUser.getName()).thenAnswer(invocation -> name);
+        when(selfUser.getDiscriminator()).thenAnswer(invocation -> discriminator);
+        when(selfUser.getAsTag()).thenAnswer(invocation -> name + "#" + discriminator);
+        when(selfUser.getId()).thenAnswer(invocation -> "0");
+        when(selfUser.getIdLong()).thenAnswer(invocation -> 0L);
+
+        return selfUser;
     }
 
 }
