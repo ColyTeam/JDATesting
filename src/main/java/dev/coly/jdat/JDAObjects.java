@@ -64,7 +64,7 @@ public class JDAObjects {
                                                                                Map<String, Object> options,
                                                                                Callback<Message> messageCallback) {
         return getSlashCommandInteractionEvent(channel, name, subcommandName, subcommandGroup, options, messageCallback,
-                new Callback<>());
+                Callback.single());
     }
 
     /**
