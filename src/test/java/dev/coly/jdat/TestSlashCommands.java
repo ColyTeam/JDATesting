@@ -43,8 +43,8 @@ public class TestSlashCommands {
         Map<String, Object> options = new HashMap<>();
         options.put("test", true);
         SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(
-                JDAObjects.getMessageChannel("test-channel", 1L, new Callback<>()), "slash-command",
-                "subcommand", "subcommand-group", options, new Callback<>());
+                JDAObjects.getMessageChannel("test-channel", 1L, Callback.single()), "slash-command",
+                "subcommand", "subcommand-group", options, Callback.single());
         Assertions.assertNotNull(event.getChannel());
         Assertions.assertEquals("test-channel", event.getChannel().getName());
         Assertions.assertEquals("slash-command", event.getName());
@@ -58,10 +58,10 @@ public class TestSlashCommands {
     public void testSlashCommandWithDeferReply() {
         Map<String, Object> options = new HashMap<>();
         options.put("test", true);
-        Callback<Boolean> callback = new Callback<>();
+        Callback<Boolean> callback = Callback.single();
         SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(
-                JDAObjects.getMessageChannel("test-channel", 1L, new Callback<>()), "defer",
-                "subcommand", "subcommand-group", options, new Callback<>(), callback);
+                JDAObjects.getMessageChannel("test-channel", 1L, Callback.single()), "defer",
+                "subcommand", "subcommand-group", options, Callback.single(), callback);
         new TestEventListener().onEvent(event);
         try {
             Assertions.assertFalse(callback.await(100L, TimeUnit.MILLISECONDS));
@@ -72,7 +72,7 @@ public class TestSlashCommands {
 
     @Test
     public void testSlashCommandWithEphemeral() {
-        Callback<Message> callback = new Callback<>();
+        Callback<Message> callback = Callback.single();
         MessageChannel messageChannel = JDAObjects.getMessageChannel("channel", 1L, callback);
         SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(messageChannel, "ephemeral",
                 null, null, null, callback);

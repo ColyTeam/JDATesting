@@ -39,7 +39,7 @@ public class TestJDAObjects {
         map.put("int", 1);
         map.put("double", 1d);
         SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(null, "command",
-                "subcommand", "subcommandGroup", map, new Callback<>());
+                "subcommand", "subcommandGroup", map, Callback.single());
         Assertions.assertEquals("penis", Objects.requireNonNull(event.getOption("string")).getAsString());
         Assertions.assertTrue(Objects.requireNonNull(event.getOption("boolean")).getAsBoolean());
         Assertions.assertEquals(1L, Objects.requireNonNull(event.getOption("long")).getAsLong());
@@ -50,7 +50,7 @@ public class TestJDAObjects {
     @Test
     public void testGetGuildChannelUnion() {
         GuildChannelUnion guildChannelUnion = JDAObjects.getGuildChannelUnion("test-channel", 42,
-                new Callback<>());
+                Callback.single());
         Assertions.assertEquals("test-channel", guildChannelUnion.getName());
         Assertions.assertEquals("42", guildChannelUnion.getId());
         Assertions.assertEquals(42, guildChannelUnion.getIdLong());

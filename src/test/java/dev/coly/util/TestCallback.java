@@ -9,7 +9,7 @@ public class TestCallback {
 
     @Test
     public void testCallback() {
-        Callback<String> callback = new Callback<>();
+        Callback<String> callback = Callback.single();
         methodCallback(callback);
         try {
             Assertions.assertEquals("test", callback.await());
@@ -20,7 +20,7 @@ public class TestCallback {
 
     @Test
     public void testCallbackTimeout() {
-        Callback<String> callback = new Callback<>();
+        Callback<String> callback = Callback.single();
         methodCallback(callback);
         try {
             Assertions.assertEquals("test", callback.await(1000L, TimeUnit.MILLISECONDS));
@@ -32,7 +32,7 @@ public class TestCallback {
     @Test
     public void testCallbackTimeoutFailed() {
         Assertions.assertThrows(InterruptedException.class,
-                () -> new Callback<>().await(100L, TimeUnit.MILLISECONDS));
+                () -> Callback.single().await(100L, TimeUnit.MILLISECONDS));
     }
 
     private void methodCallback(Callback<String> callback) {

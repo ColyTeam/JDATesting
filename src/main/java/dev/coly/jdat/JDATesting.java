@@ -33,7 +33,7 @@ public class JDATesting {
      *                              interrupted if the thread is interrupted.
      */
     public static Message testMessageReceivedEvent(EventListener listener, String input) throws InterruptedException {
-        Callback<Message> messageCallback = new Callback<>();
+        Callback<Message> messageCallback = Callback.single();
 
         MessageChannel channel = JDAObjects.getMessageChannel("test-chanel", 0L, messageCallback);
         Message message = JDAObjects.getMessage(input, new ArrayList<>(), channel);
@@ -80,7 +80,7 @@ public class JDATesting {
     public static Message testSlashCommandEvent(EventListener listener, String name, String subcommand,
                                              String subcommandGroup, Map<String, Object> options)
             throws InterruptedException {
-        Callback<Message> messageCallback = new Callback<>();
+        Callback<Message> messageCallback = Callback.single();
 
         MessageChannel channel = JDAObjects.getMessageChannel("test-chanel", 0L, messageCallback);
         SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(channel, name, subcommand,
