@@ -13,11 +13,7 @@ public class TestEventListener extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent e) {
-        if (e.getMessage().getContentDisplay().equals(".ping")) {
-            e.getChannel().sendMessage("Pong!").queue();
-        } else if (e.getMessage().getContentDisplay().equals(".embed")) {
-            e.getChannel().sendMessageEmbeds(getTestEmbed()).queue();
-        }
+        handleMessageReceived(e);
     }
 
     @Override
@@ -40,6 +36,14 @@ public class TestEventListener extends ListenerAdapter {
         embedBuilder.setAuthor("Coly Team");
         embedBuilder.addField("Test Name", "Test Value", true);
         return embedBuilder.build();
+    }
+
+    public static void handleMessageReceived(MessageReceivedEvent e) {
+        if (e.getMessage().getContentDisplay().equals(".ping")) {
+            e.getChannel().sendMessage("Pong!").queue();
+        } else if (e.getMessage().getContentDisplay().equals(".embed")) {
+            e.getChannel().sendMessageEmbeds(getTestEmbed()).queue();
+        }
     }
 
 }

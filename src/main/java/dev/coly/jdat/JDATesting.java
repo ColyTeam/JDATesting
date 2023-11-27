@@ -1,5 +1,6 @@
 package dev.coly.jdat;
 
+import dev.coly.util.Annotations;
 import dev.coly.util.Callback;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -7,13 +8,17 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.hooks.SubscribeEvent;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 
 /**
  * This class should be used in testing. It creates fake {@link net.dv8tion.jda.api.events.Event}s and other JDA objects
@@ -22,17 +27,53 @@ import java.util.concurrent.CountDownLatch;
 public class JDATesting {
 
     /**
-     * Test a {@link EventListener} with a {@link MessageReceivedEvent}. You can test the return to see if your
-     * code returns the correct {@link Message} output for a given input.
+     * Test a {@link EventListener} with a {@link MessageReceivedEvent}.
+     * One can test the return to see if one's code returns the correct {@link Message} output for a given input.
      *
      * @param listener              The {@link EventListener} that will be tested.
-     * @param input                 The input you want to test.
-     * @return                      The {@link Message} your {@link EventListener} would return given the input. Test
-     *                              this if it is correct.
+     * @param input                 The input that will be used as the message.
+     * @return                      The {@link Message} the {@link EventListener} would return given the input.
+     *                              Test this if it is correct.
      * @throws InterruptedException This code uses a {@link CountDownLatch} that can the
      *                              interrupted if the thread is interrupted.
      */
-    public static Message testMessageReceivedEvent(EventListener listener, String input) throws InterruptedException {
+    public static Message testMessageReceivedEvent(@NotNull EventListener listener, String input) throws InterruptedException {
+        return testMessageReceivedEvent(input, listener::onEvent);
+    }
+
+    /**
+     * Test a {@link Class} with methods annotated with {@link SubscribeEvent} using a {@link MessageReceivedEvent}.
+     * One can test the return to see if one's code returns the correct {@link Message} outputs for a given input.
+     * This method will test all methods annotated with {@link SubscribeEvent} in the provided {@link Class} and will
+     * return only when all methods have been tested.
+     * The order of the {@link Message} objects in the returned is the same order as the methods in the {@link Class}.
+     *
+     * @param clazz                 The {@link Class} that contains methods annotated with {@link SubscribeEvent} and
+     *                              will be tested.
+     * @param input                 The input that will be used as the message.
+     * @return                      List of {@link Message}s the methods would return given the input.
+     *                              Test if the messages are correct.
+     * @throws InterruptedException This code uses a {@link CountDownLatch} that can be
+     *                              interrupted if the thread is interrupted.
+     */
+    @NotNull
+    public static List<Message> testMessageReceivedEvent(Class<?> clazz, String input) throws InterruptedException {
+        List<Method> methods = Annotations.getMethodsAnnotatedWith(clazz, SubscribeEvent.class);
+        List <Message> messages = new ArrayList<>();
+        for (Method method : methods) {
+            messages.add(testMessageReceivedEvent(input, (event) -> {
+                try {
+                    method.invoke(clazz.getDeclaredConstructor().newInstance(), event);
+                } catch (Exception e) {
+                    Assertions.fail("Could not invoke method with @SubscribeEvent annotation", e);
+                }
+            }));
+        }
+        return messages;
+    }
+
+    private static Message testMessageReceivedEvent(String input, @NotNull Consumer<MessageReceivedEvent> onEvent)
+            throws InterruptedException {
         Callback<Message> messageCallback = Callback.single();
 
         MessageChannel channel = JDAObjects.getMessageChannel("test-chanel", 0L, messageCallback);
@@ -40,7 +81,7 @@ public class JDATesting {
         MessageReceivedEvent event = JDAObjects.getMessageReceivedEvent(channel, message,
                 JDAObjects.getMember("Test User", "0000"));
 
-        listener.onEvent(event);
+        onEvent.accept(event);
         return messageCallback.await();
     }
 
