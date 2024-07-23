@@ -10,22 +10,24 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
+import net.dv8tion.jda.api.interactions.commands.CommandInteractionPayload;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.context.MessageContextInteraction;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.internal.JDAImpl;
 import org.jetbrains.annotations.NotNull;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -85,54 +87,13 @@ public class JDAObjects {
                                                                                Map<String, Object> options,
                                                                                Callback<Message> messageCallback,
                                                                                Callback<Boolean> deferReply) {
-        SlashCommandInteractionEvent event = mock(SlashCommandInteractionEvent.class);
-        when(event.getName()).thenAnswer(invocation -> name);
-        when(event.getSubcommandName()).thenAnswer(invocation -> subcommandName);
-        when(event.getSubcommandGroup()).thenAnswer(invocation -> subcommandGroup);
-        when(event.getChannel()).thenAnswer(invocation -> channel);
+        Member member = getMember("User", "0000");
+        CommandInteraction interaction = getCommandInteraction(channel, member, name, subcommandName, subcommandGroup,
+                options, CommandInteraction.class);
+        SlashCommandInteractionEvent event = getCommandInteractionEvent(interaction, messageCallback, deferReply,
+                SlashCommandInteractionEvent.class);
 
-        when(event.getOption(anyString())).thenAnswer(invocation -> {
-            OptionMapping mapping = mock(OptionMapping.class);
-            // why
-            when(mapping.getAsAttachment()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsString()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsBoolean()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsLong()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsInt()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsDouble()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsMentionable()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsMember()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsUser()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsRole()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-            when(mapping.getAsChannel()).thenAnswer(inv -> options.get((String) invocation.getArgument(0)));
-
-            return mapping;
-        });
-
-        when(event.reply(anyString())).thenAnswer(invocation ->
-                getReplyCallbackAction(getMessage(invocation.getArgument(0), channel), messageCallback));
-        when(event.reply(any(MessageCreateData.class))).thenAnswer(invocation ->
-                getReplyCallbackAction(getMessage(invocation.getArgument(0, MessageCreateData.class).getContent(),
-                        channel), messageCallback));
-        when(event.replyEmbeds(anyList())).thenAnswer(invocation ->
-                getReplyCallbackAction(getMessage(null, invocation.getArgument(0), channel),
-                        messageCallback));
-        when(event.replyEmbeds(any(MessageEmbed.class), any(MessageEmbed[].class))).thenAnswer(invocation -> {
-            List<MessageEmbed> embeds = invocation.getArguments().length == 1 ? new ArrayList<>() :
-                    Arrays.asList(invocation.getArgument(1));
-            embeds.add(invocation.getArgument(0));
-            return getReplyCallbackAction(getMessage(null, embeds, channel), messageCallback);
-        });
-
-        when(event.deferReply()).thenAnswer(invocation -> {
-            deferReply.callback(false);
-            return mock(ReplyCallbackAction.class);
-        });
-
-        when(event.deferReply(any(Boolean.class))).thenAnswer(invocation -> {
-            deferReply.callback(invocation.getArgument(0));
-            return mock(ReplyCallbackAction.class);
-        });
+        mockCallbacks(event, channel, messageCallback, deferReply);
 
         return event;
     }
@@ -177,6 +138,49 @@ public class JDAObjects {
     }
 
     /**
+     * Get a mocked {@link MessageContextInteractionEvent}.
+     *
+     * @param interaction   the interaction the triggered this event.
+     * @return              a mocked {@link MessageContextInteractionEvent}.
+     */
+    public static MessageContextInteractionEvent getMessageContextInteractionEvent(
+            MessageContextInteraction interaction, Callback<Message> messageCallback, Callback<Boolean> deferReply) {
+        return getCommandInteractionEvent(interaction, messageCallback, deferReply, MessageContextInteractionEvent.class);
+    }
+
+    protected static <T extends GenericCommandInteractionEvent> T getCommandInteractionEvent(
+            CommandInteraction interaction, Callback<Message> messageCallback, Callback<Boolean> deferReply,
+            Class<T> clazz) {
+        T event = mock(clazz);
+        JDA jda = getJDA();
+
+        when(event.getChannel()).thenAnswer(invocation -> interaction.getChannel());
+        when(event.getJDA()).thenReturn(jda);
+        when(event.getInteraction()).thenAnswer(invocation -> interaction);
+        when(event.getChannelId()).thenAnswer(invocation -> interaction.getChannelId());
+        when(event.getChannelIdLong()).thenAnswer(invocation -> interaction.getChannelIdLong());
+        when(event.getChannelType()).thenAnswer(invocation -> interaction.getChannelType());
+        when(event.getMessageChannel()).thenAnswer(invocation -> interaction.getMessageChannel());
+        when(event.getGuildChannel()).thenAnswer(invocation -> interaction.getGuildChannel());
+        when(event.getMember()).thenAnswer(invocation -> interaction.getMember());
+        when(event.getFullCommandName()).thenAnswer(invocation -> interaction.getFullCommandName());
+        when(event.getName()).thenAnswer(invocation -> interaction.getName());
+        when(event.getSubcommandName()).thenAnswer(invocation -> interaction.getSubcommandName());
+        when(event.getSubcommandGroup()).thenAnswer(invocation -> interaction.getSubcommandGroup());
+        when(event.getOptions()).thenAnswer(invocation -> interaction.getOptions());
+        when(event.getOption(anyString())).thenAnswer(invocation ->
+                interaction.getOption(invocation.getArgument(0)));
+        when(event.getOptionsByName(anyString())).thenAnswer(invocation ->
+                interaction.getOptionsByName(invocation.getArgument(0)));
+        when(event.getOptionsByType(any(OptionType.class))).thenAnswer(invocation ->
+                interaction.getOptionsByType(invocation.getArgument(0)));
+
+        mockCallbacks(event, (MessageChannel) event.getChannel(), messageCallback, deferReply);
+
+        return event;
+    }
+
+    /**
      * Get a mocked {@link GuildJoinEvent}.
      *
      * @param guild the guild that was joined.
@@ -192,6 +196,76 @@ public class JDAObjects {
         return event;
     }
 
+    private static void mockOptions(CommandInteractionPayload event, Map<String, Object> options) {
+        if (options == null) {
+            options = new HashMap<>();
+        }
+
+        List<OptionMapping> optionMappings = new ArrayList<>();
+        for (Map.Entry<String, Object> entry : options.entrySet()) {
+            OptionMapping mapping = mock(OptionMapping.class);
+
+            when(mapping.getName()).thenReturn(entry.getKey());
+            // why
+            when(mapping.getAsAttachment()).thenAnswer(inv -> entry.getValue());
+            when(mapping.getAsString()).thenAnswer(inv -> entry.getValue());
+            when(mapping.getAsBoolean()).thenAnswer(inv -> entry.getValue());
+            when(mapping.getAsLong()).thenAnswer(inv -> entry.getValue());
+            when(mapping.getAsInt()).thenAnswer(inv -> entry.getValue());
+            when(mapping.getAsDouble()).thenAnswer(inv -> entry.getValue());
+            when(mapping.getAsMentionable()).thenAnswer(inv -> entry.getValue());
+            when(mapping.getAsMember()).thenAnswer(inv -> entry.getValue());
+            when(mapping.getAsUser()).thenAnswer(inv -> entry.getValue());
+            when(mapping.getAsRole()).thenAnswer(inv -> entry.getValue());
+            when(mapping.getAsChannel()).thenAnswer(inv -> entry.getValue());
+
+            optionMappings.add(mapping);
+        }
+
+        when(event.getOptions()).thenReturn(optionMappings);
+
+        when(event.getOption(anyString())).thenAnswer(invocation -> {
+            Optional<OptionMapping> mapping = optionMappings.stream()
+                    .filter(optionMapping -> optionMapping.getName().equals(invocation.getArgument(0)))
+                    .findFirst();
+            if (mapping.isPresent()) {
+                return mapping.get();
+            }
+            throw new IllegalArgumentException("Unknown option: " + invocation.getArgument(0));
+        });
+
+        when(event.getOptionsByName(anyString())).thenAnswer(invocation -> optionMappings.stream()
+                .filter(optionMapping -> optionMapping.getName().equals(invocation.getArgument(0))).toList());
+    }
+
+    private static void mockCallbacks(IReplyCallback event, MessageChannel channel,
+                                      Callback<Message> messageCallback, Callback<Boolean> deferReply) {
+        when(event.reply(anyString())).thenAnswer(invocation ->
+                getReplyCallbackAction(getMessage(invocation.getArgument(0), channel), messageCallback));
+        when(event.reply(any(MessageCreateData.class))).thenAnswer(invocation ->
+                getReplyCallbackAction(getMessage(invocation.getArgument(0, MessageCreateData.class).getContent(),
+                        channel), messageCallback));
+        when(event.replyEmbeds(anyList())).thenAnswer(invocation ->
+                getReplyCallbackAction(getMessage(null, invocation.getArgument(0), channel),
+                        messageCallback));
+        when(event.replyEmbeds(any(MessageEmbed.class), any(MessageEmbed[].class))).thenAnswer(invocation -> {
+            List<MessageEmbed> embeds = invocation.getArguments().length == 1 ? new ArrayList<>() :
+                    Arrays.asList(invocation.getArgument(1));
+            embeds.add(invocation.getArgument(0));
+            return getReplyCallbackAction(getMessage(null, embeds, channel), messageCallback);
+        });
+
+        when(event.deferReply()).thenAnswer(invocation -> {
+            deferReply.callback(false);
+            return mock(ReplyCallbackAction.class);
+        });
+
+        when(event.deferReply(any(Boolean.class))).thenAnswer(invocation -> {
+            deferReply.callback(invocation.getArgument(0));
+            return mock(ReplyCallbackAction.class);
+        });
+    }
+
     /**
      * Get a mocked instance of JDA.
      *
@@ -201,7 +275,6 @@ public class JDAObjects {
     public static JDA getJDA() {
         return getJDA("Test", "0000");
     }
-
 
 
     /**
@@ -396,4 +469,38 @@ public class JDAObjects {
         return guild;
     }
 
+    protected static <T extends CommandInteraction> T
+        getCommandInteraction(MessageChannel channel, Member member, String name, String subcommand, String subgroup,
+                              Map<String, Object> options, Class<T> clazz) {
+        T interaction = mock(clazz);
+
+        when(interaction.getName()).thenReturn(name);
+        when(interaction.getSubcommandName()).thenReturn(subcommand);
+        when(interaction.getSubcommandGroup()).thenReturn(subgroup);
+        when(interaction.getMessageChannel()).thenReturn(channel);
+        when(interaction.getChannel()).thenAnswer(invocation -> channel);
+        when(interaction.getChannelId()).thenAnswer(invocation -> channel.getId());
+        when(interaction.getChannelIdLong()).thenAnswer(invocation -> channel.getIdLong());
+        when(interaction.getChannelType()).thenAnswer(invocation -> channel.getType());
+        when(interaction.getMember()).thenReturn(member);
+
+        mockOptions(interaction, options);
+
+        return interaction;
+    }
+
+    /**
+     * Get a mocked {@link MessageContextInteraction}.
+     *
+     * @param channel       the channel the interaction was triggered.
+     * @param member        the member the interaction was triggered by.
+     * @param name          the name of the application command the interaction triggered.
+     * @param options       options for application command.
+     * @return              a mocked {@link MessageContextInteraction}.
+     */
+    public static MessageContextInteraction getMessageContextInteraction(MessageChannel channel, Member member,
+                                                                         String name, Map<String, Object> options) {
+        return getCommandInteraction(channel, member, name, null, null, options,
+                MessageContextInteraction.class);
+    }
 }

@@ -2,13 +2,17 @@ package dev.coly.jdat;
 
 import dev.coly.util.Annotations;
 import dev.coly.util.Callback;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.hooks.SubscribeEvent;
+import net.dv8tion.jda.api.interactions.commands.CommandInteraction;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 
@@ -118,17 +122,23 @@ public class JDATesting {
         }
     }
 
+    /**
+     * Test a {@link EventListener} with a {@link SlashCommandInteractionEvent}.
+     * One can test the return to see if one's code returns the correct {@link Message} output for a given input.
+     *
+     * @param listener              The {@link EventListener} that will be tested.
+     * @param name                  The name of the command.
+     * @param options               Options for this application command.
+     * @return                      The {@link Message} the {@link EventListener} would return given the input.
+     *                              Test this if it is correct.
+     * @throws InterruptedException This code uses a {@link CountDownLatch} that can the interrupted if the thread
+     *                              is interrupted.
+     */
     public static Message testSlashCommandEvent(EventListener listener, String name, String subcommand,
-                                             String subcommandGroup, Map<String, Object> options)
+                                                String subcommandGroup, Map<String, Object> options)
             throws InterruptedException {
-        Callback<Message> messageCallback = Callback.single();
-
-        MessageChannel channel = JDAObjects.getMessageChannel("test-chanel", 0L, messageCallback);
-        SlashCommandInteractionEvent event = JDAObjects.getSlashCommandInteractionEvent(channel, name, subcommand,
-                subcommandGroup, options, messageCallback);
-
-        listener.onEvent(event);
-        return messageCallback.await();
+        return testGenericCommandInteractionEvent(listener, name, subcommand, subcommandGroup, options,
+                SlashCommandInteractionEvent.class);
     }
 
     /**
@@ -159,12 +169,8 @@ public class JDATesting {
     public static void assertSlashCommandEvent(EventListener listener, String command, String subcommand,
                                                String subcommandGroup, Map<String, Object> options,
                                                String expectedOutput) {
-        try {
-            Assertions.assertEquals(testSlashCommandEvent(listener, command, subcommand, subcommandGroup, options)
-                    .getContentRaw(), expectedOutput);
-        } catch (InterruptedException e){
-            Assertions.fail(e);
-        }
+        assertGenericCommandInteractionEvent(listener, command, subcommand, subcommandGroup, options,
+                SlashCommandInteractionEvent.class, expectedOutput);
     }
 
     /**
@@ -195,12 +201,98 @@ public class JDATesting {
     public static void assertSlashCommandEvent(EventListener listener, String command, String subcommand,
                                                String subcommandGroup, Map<String, Object> options,
                                                List<MessageEmbed> expectedOutputs) {
+        assertGenericCommandInteractionEvent(listener, command, subcommand, subcommandGroup, options,
+                SlashCommandInteractionEvent.class, expectedOutputs);
+    }
+
+    /**
+     * Test a {@link EventListener} with a {@link MessageContextInteractionEvent}.
+     * One can test the return to see if one's code returns the correct {@link Message} output for a given input.
+     *
+     * @param listener              The {@link EventListener} that will be tested.
+     * @param name                  The name of the command.
+     * @param options               Options for this application command.
+     * @return                      The {@link Message} the {@link EventListener} would return given the input.
+     *                              Test this if it is correct.
+     * @throws InterruptedException This code uses a {@link CountDownLatch} that can the interrupted if the thread
+     *                              is interrupted.
+     */
+    public static Message testMessageContextInteractionEvent(EventListener listener, String name,
+                                                             Map<String, Object> options) throws InterruptedException {
+        return testGenericCommandInteractionEvent(listener, name, null, null, options,
+                MessageContextInteractionEvent.class);
+    }
+
+    private static <T extends GenericCommandInteractionEvent> Message
+        testGenericCommandInteractionEvent(EventListener listener, String name, String subcommand, String subgroup,
+                                           Map<String, Object> options, Class<T> clazz)
+            throws InterruptedException {
+        Callback<Message> messageCallback = Callback.single();
+
+        MessageChannel channel = JDAObjects.getMessageChannel("test-chanel", 0L, messageCallback);
+        Member member = JDAObjects.getMember("member", "0000");
+        CommandInteraction interaction = JDAObjects.getCommandInteraction(channel, member, name, subcommand, subgroup,
+                options, CommandInteraction.class);
+        T event = JDAObjects.getCommandInteractionEvent(interaction, messageCallback, Callback.single(), clazz);
+
+        listener.onEvent(event);
+        return messageCallback.await();
+    }
+
+    private static <T extends GenericCommandInteractionEvent> void
+    assertGenericCommandInteractionEvent(EventListener listener, String command, String subcommand, String subgroup,
+                                         Map<String, Object> options, Class<T> type, String expectedOutput) {
         try {
-            assertEmbeds(testSlashCommandEvent(listener, command, subcommand, subcommandGroup, options),
+            Assertions.assertEquals(
+                    testGenericCommandInteractionEvent(listener, command, subcommand, subgroup, options, type)
+                            .getContentRaw(),
+                    expectedOutput);
+        } catch (InterruptedException e){
+            Assertions.fail(e);
+        }
+    }
+
+    private static <T extends GenericCommandInteractionEvent> void
+    assertGenericCommandInteractionEvent(EventListener listener, String command, String subcommand, String subgroup,
+                                         Map<String, Object> options, Class<T> type,
+                                         List<MessageEmbed> expectedOutputs) {
+        try {
+            assertEmbeds(testGenericCommandInteractionEvent(listener, command, subcommand, subgroup, options, type),
                     expectedOutputs);
         } catch (InterruptedException e) {
             Assertions.fail(e);
         }
+    }
+
+    /**
+     * Test a {@link EventListener} with a {@link MessageContextInteractionEvent}. The return will be tested against the
+     * expectedOutput specified.
+     *
+     * @param listener          The {@link EventListener} that will be tested.
+     * @param command           The command that will be tested.
+     * @param options           Options that will be tested.
+     * @param expectedOutputs   A list of {@link MessageEmbed} to test against. The order is important.
+     */
+    public static void assertMessageContextInteractionEvent(EventListener listener, String command,
+                                                            Map<String, Object> options, List<MessageEmbed> expectedOutputs) {
+        assertGenericCommandInteractionEvent(listener, command, null, null, options,
+                MessageContextInteractionEvent.class, expectedOutputs);
+    }
+
+
+    /**
+     * Test a {@link EventListener} with a {@link MessageContextInteractionEvent}. The raw content of the return message
+     * will be tested against the expectedOutput specified.
+     *
+     * @param listener          The {@link EventListener} that will be tested.
+     * @param command           The command that will be tested.
+     * @param options           Options that will be tested.
+     * @param expectedOutput    The excepted string that {@link Message#getContentRaw()}} will have.
+     */
+    public static void assertMessageContextInteractionEvent(EventListener listener, String command,
+                                                            Map<String, Object> options, String expectedOutput) {
+        assertGenericCommandInteractionEvent(listener, command, null, null, options,
+                MessageContextInteractionEvent.class, expectedOutput);
     }
 
     private static void assertEmbeds(Message message, List<MessageEmbed> expectedOutputs) {
