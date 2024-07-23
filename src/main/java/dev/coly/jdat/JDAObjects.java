@@ -3,16 +3,13 @@ package dev.coly.jdat;
 import dev.coly.util.Callback;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.SelfUser;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
-import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -176,6 +173,22 @@ public class JDAObjects {
         when(event.getMessage()).thenAnswer(invocation -> message);
         when(event.getMember()).thenAnswer(invocation -> member);
         when(event.getAuthor()).thenAnswer(invocation -> member.getUser());
+        return event;
+    }
+
+    /**
+     * Get a mocked {@link GuildJoinEvent}.
+     *
+     * @param guild the guild that was joined.
+     * @return      a mocked {@link GuildJoinEvent}.
+     */
+    public static GuildJoinEvent getGuildJoinEvent(Guild guild) {
+        GuildJoinEvent event = mock(GuildJoinEvent.class);
+        JDA jda = getJDA();
+
+        when(event.getGuild()).thenReturn(guild);
+        when(event.getJDA()).thenReturn(jda);
+
         return event;
     }
 
@@ -365,6 +378,22 @@ public class JDAObjects {
         when(selfUser.getIdLong()).thenAnswer(invocation -> 0L);
 
         return selfUser;
+    }
+
+    /**
+     * Get a mocked {@link Guild}.
+     *
+     * @param name  the name of the guild.
+     * @return      a mocked {@link Guild}
+     */
+    public static Guild getGuild(String name) {
+        Guild guild = mock(Guild.class);
+
+        when(guild.getName()).thenReturn(name);
+        when(guild.getId()).thenReturn("0");
+        when(guild.getIdLong()).thenReturn(0L);
+
+        return guild;
     }
 
 }
