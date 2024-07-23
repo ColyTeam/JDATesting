@@ -6,7 +6,7 @@
 
     <groupId>dev.coly</groupId>
     <artifactId>JDATesting</artifactId>
-    <version>0.6.0</version>
+    <version>0.6.1</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -23,7 +23,7 @@
 
     <distributionManagement>
         <repository>
-            <id>reposilite</id>
+            <id>coly</id>
             <name>Coly Maven Repository</name>
             <url>https://m2.coly.dev/releases</url>
         </repository>
