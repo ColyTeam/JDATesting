@@ -4,8 +4,8 @@ import dev.coly.util.Annotations;
 import dev.coly.util.Callback;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.MessageContextInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -232,8 +232,8 @@ public class JDATesting {
         MessageChannel channel = JDAObjects.getMessageChannel("test-chanel", 0L, messageCallback);
         Member member = JDAObjects.getMember("member", "0000");
         CommandInteraction interaction = JDAObjects.getCommandInteraction(channel, member, name, subcommand, subgroup,
-                options, CommandInteraction.class);
-        T event = JDAObjects.getCommandInteractionEvent(interaction, messageCallback, Callback.single(), clazz);
+                options, messageCallback, Callback.single(), CommandInteraction.class);
+        T event = JDAObjects.getCommandInteractionEvent(interaction, clazz);
 
         listener.onEvent(event);
         return messageCallback.await();

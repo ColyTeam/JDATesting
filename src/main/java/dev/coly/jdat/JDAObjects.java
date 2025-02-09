@@ -173,12 +173,10 @@ public class JDAObjects {
      * Get a mocked {@link MessageContextInteractionEvent}.
      *
      * @param interaction       the interaction triggered this event.
-     * @param messageCallback   a callback when a reply is triggered with a message
-     * @param deferReply        a callback when a deferred reply is triggered.
      * @return a mocked {@link MessageContextInteractionEvent}.
      */
     public static MessageContextInteractionEvent getMessageContextInteractionEvent(
-            MessageContextInteraction interaction, Callback<Message> messageCallback, Callback<Boolean> deferReply) {
+            MessageContextInteraction interaction) {
         return getCommandInteractionEvent(interaction, MessageContextInteractionEvent.class);
     }
 
@@ -629,6 +627,8 @@ public class JDAObjects {
             else
                 return interaction.editComponents(components).map(it -> null);
         });
+
+        return interaction;
     }
 
     public static ModalInteraction getModalInteraction(MessageChannel channel, Message message, String modalId,
@@ -645,7 +645,7 @@ public class JDAObjects {
                 values.stream()
                         .filter(mapping -> mapping.getId().equals(invocation.getArgument(0)))
                         .findFirst()
-                        .orElseGet(() -> null)
+                        .orElse(null)
         );
         return interaction;
     }
@@ -790,8 +790,13 @@ public class JDAObjects {
 
         when(callback.replyEmbeds(anyList())).thenAnswer(invocation ->
                 interaction.replyEmbeds(invocation.getArgument(0)));
-        when(callback.replyEmbeds(any(MessageEmbed.class), any(MessageEmbed[].class))).thenAnswer(invocation ->
-                interaction.replyEmbeds(invocation.getArgument(0), invocation.getArgument(1)));
+        when(callback.replyEmbeds(any(MessageEmbed.class), any(MessageEmbed[].class))).thenAnswer(invocation -> {
+            if (invocation.getArguments().length == 1) {
+                return interaction.replyEmbeds(invocation.getArgument(0), new MessageEmbed[0]);
+            } else {
+                return interaction.replyEmbeds(invocation.getArgument(0), invocation.getArgument(1));
+            }
+        });
 
         when(callback.replyComponents(anyList())).thenAnswer(invocation ->
                 interaction.replyComponents(invocation.getArgument(0)));
