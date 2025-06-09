@@ -85,4 +85,17 @@ public class TestSlashCommands {
         }
     }
 
+    @Test
+    public void testTestSlashCommandEvent() {
+        try {
+            Message message = JDATesting.testSlashCommandEvent(new TestEventListener(), "ping",
+                    null, null, null);
+
+            Assertions.assertNotNull(message);
+            Assertions.assertEquals("Pong!", message.getContentRaw());
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
