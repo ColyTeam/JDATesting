@@ -3,7 +3,9 @@ package dev.coly.jdat;
 import dev.coly.util.Callback;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -57,6 +59,20 @@ public class TestJDAObjects {
         Assertions.assertNotNull(guildChannelUnion.asTextChannel());
         Assertions.assertNotNull(guildChannelUnion.asGuildMessageChannel());
         Assertions.assertNotNull(guildChannelUnion.asNewsChannel());
+    }
+
+    @Test
+    public void testGetGuildJoinEvent() {
+        GuildJoinEvent event = JDAObjects.getGuildJoinEvent(JDAObjects.getGuild("Test Guild"));
+        Assertions.assertNotNull(event);
+        Assertions.assertEquals("Test Guild", event.getGuild().getName());
+    }
+
+    @Test
+    public void testGetGuild() {
+        Guild guild = JDAObjects.getGuild("Test Guild");
+        Assertions.assertNotNull(guild);
+        Assertions.assertEquals("Test Guild", guild.getName());
     }
 
 }
