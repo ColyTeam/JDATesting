@@ -2,7 +2,7 @@ package dev.coly.jdat;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +17,7 @@ public class TestEventListener extends ListenerAdapter {
     }
 
     @Override
-    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent e) {
+    public void onGenericCommandInteraction(@NotNull GenericCommandInteractionEvent e) {
         switch (e.getName()) {
             case "embed" -> e.replyEmbeds(getTestEmbed()).queue();
             case "ping" -> e.reply("Pong!").queue();
